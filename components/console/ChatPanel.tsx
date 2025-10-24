@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { MessageSquare, Send, Paperclip, FileText, X } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // 임시 더미 채팅 데이터
 const dummyMessages = [
@@ -21,6 +22,7 @@ const dummyMessages = [
 ]
 
 export default function ChatPanel() {
+  const { t } = useLanguage()
   const [messages] = useState(dummyMessages)
   const [inputText, setInputText] = useState('')
   const [attachedFiles] = useState<string[]>(['database_lecture.pdf'])
@@ -39,12 +41,7 @@ export default function ChatPanel() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">AI 채팅</h2>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">Claude 3.5 Sonnet</span>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('chat.title')}</h2>
           </div>
         </div>
       </div>
@@ -58,10 +55,10 @@ export default function ChatPanel() {
                 <MessageSquare className="w-8 h-8 text-purple-600 dark:text-purple-400" />
               </div>
               <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">
-                AI에게 질문하세요
+                {t('chat.ask.ai')}
               </p>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                강의 내용과 업로드한 PDF를 기반으로 답변드립니다
+                {t('chat.description')}
               </p>
             </div>
           </div>
@@ -89,7 +86,7 @@ export default function ChatPanel() {
                   {message.type === 'ai' && message.sources && (
                     <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                       <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-semibold">
-                        참고 자료:
+                        {t('chat.sources')}
                       </p>
                       <div className="space-y-1">
                         {message.sources.map((source, idx) => (
@@ -121,7 +118,7 @@ export default function ChatPanel() {
           <div className="flex items-center gap-2 mb-2">
             <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              첨부된 자료:
+              {t('chat.attached.files')}
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -160,7 +157,7 @@ export default function ChatPanel() {
                   handleSend()
                 }
               }}
-              placeholder="AI에게 질문하세요... (Shift+Enter로 줄바꿈)"
+              placeholder={t('chat.input.placeholder')}
               className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
               rows={2}
             />
@@ -177,7 +174,7 @@ export default function ChatPanel() {
         </div>
 
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-          AI는 강의 자막과 업로드된 PDF를 참고하여 답변합니다
+          {t('chat.footer.note')}
         </p>
       </div>
     </div>

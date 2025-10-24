@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Plus, Clock, ChevronRight, Mic, LogOut, Loader2, MoreVertical, Edit2, Trash2 } from 'lucide-react'
+import { Plus, Clock, ChevronRight, Mic, LogOut, Loader2, MoreVertical, Edit2, Trash2, User } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLectures, type Lecture } from '@/hooks/useLectures'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { LanguageSelector } from '@/components/LanguageSelector'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface SidebarProps {
   selectedLectureId: string | null
@@ -18,6 +21,8 @@ export default function Sidebar({
   onCreateLecture,
 }: SidebarProps) {
   const { user, signOut } = useAuth()
+  const { t } = useLanguage()
+  const router = useRouter()
   const { lectures, loading, createLecture, deleteLecture, updateLectureTitle } = useLectures()
   const [creating, setCreating] = useState(false)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
@@ -51,9 +56,9 @@ export default function Sidebar({
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     if (hours > 0) {
-      return `${hours}시간 ${minutes}분`
+      return `${hours}${t('sidebar.duration.hours')} ${minutes}${t('sidebar.duration.minutes')}`
     }
-    return `${minutes}분`
+    return `${minutes}${t('sidebar.duration.minutes')}`
   }
 
   // 메뉴 외부 클릭 감지
@@ -91,7 +96,7 @@ export default function Sidebar({
   }
 
   const handleDeleteClick = async (lecture: Lecture) => {
-    if (confirm('정말 삭제하시겠습니까?')) {
+    if (confirm(t('sidebar.delete.confirm'))) {
       await deleteLecture(lecture.id)
       setOpenMenuId(null)
     }
@@ -106,7 +111,7 @@ export default function Sidebar({
             <Mic className="w-6 h-6 text-white" />
           </div>
           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Livey
+            {t('app.name')}
           </span>
         </div>
 
@@ -118,12 +123,12 @@ export default function Sidebar({
           {creating ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              생성 중...
+              {t('sidebar.creating')}
             </>
           ) : (
             <>
               <Plus className="w-5 h-5" />
-              새 강의 시작
+              {t('sidebar.new.lecture')}
             </>
           )}
         </button>
@@ -134,7 +139,7 @@ export default function Sidebar({
         <div className="flex items-center gap-2 px-2 mb-3">
           <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-            최근 강의
+            {t('sidebar.recent.lectures')}
           </h2>
         </div>
 
@@ -144,8 +149,8 @@ export default function Sidebar({
           </div>
         ) : lectures.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-gray-500 dark:text-gray-400">강의가 없습니다</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">새 강의를 시작하세요</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('sidebar.no.lectures')}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t('sidebar.start.new')}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -202,10 +207,10 @@ export default function Sidebar({
                         }`}
                       >
                         {lecture.status === 'recording'
-                          ? '녹음 중'
+                          ? t('sidebar.status.recording')
                           : lecture.status === 'completed'
-                          ? '완료'
-                          : '대기'}
+                          ? t('sidebar.status.completed')
+                          : t('sidebar.status.pending')}
                       </span>
                       <p className="text-xs text-gray-400 dark:text-gray-500">
                         {formatDuration(lecture.duration_seconds)}
@@ -232,14 +237,14 @@ export default function Sidebar({
                           className="w-full px-3 py-2 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
                         >
                           <Edit2 className="w-4 h-4" />
-                          이름 수정
+                          {t('sidebar.menu.edit')}
                         </button>
                         <button
                           onClick={() => handleDeleteClick(lecture)}
                           className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" />
-                          삭제
+                          {t('sidebar.menu.delete')}
                         </button>
                       </div>
                     )}
@@ -249,6 +254,11 @@ export default function Sidebar({
             ))}
           </div>
         )}
+      </div>
+
+      {/* Language Selector */}
+      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <LanguageSelector />
       </div>
 
       {/* Theme Toggle */}
@@ -262,18 +272,27 @@ export default function Sidebar({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-              {user?.user_metadata?.full_name || '사용자'}
+              {user?.user_metadata?.full_name || t('profile.user.default')}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
           </div>
         </div>
-        <button
-          onClick={handleLogout}
-          className="w-full py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          <LogOut className="w-4 h-4" />
-          로그아웃
-        </button>
+        <div className="space-y-2">
+          <button
+            onClick={() => router.push('/profile')}
+            className="w-full py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <User className="w-4 h-4" />
+            {t('sidebar.my.profile')}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            {t('sidebar.logout')}
+          </button>
+        </div>
       </div>
     </aside>
   )

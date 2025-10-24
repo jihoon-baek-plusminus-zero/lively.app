@@ -7,6 +7,7 @@ import CaptionPanel from '@/components/console/CaptionPanel'
 import ChatPanel from '@/components/console/ChatPanel'
 import { Play, Square, Mic, AlertCircle, Pause, Download, FileText, Loader2, MoreVertical, Edit2, Trash2, Check, X } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useAudioRecorder } from '@/hooks/useAudioRecorder'
 import { useDeepgram } from '@/hooks/useDeepgram'
 import { useLectures, type Lecture } from '@/hooks/useLectures'
@@ -16,6 +17,7 @@ import { uploadAudioFile, downloadAudioFile, downloadTranscript } from '@/lib/st
 
 export default function ConsolePage() {
   const { user, loading } = useAuth()
+  const { t } = useLanguage()
   const router = useRouter()
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null)
   const [recordingStartTime, setRecordingStartTime] = useState<number>(0)
@@ -129,7 +131,7 @@ export default function ConsolePage() {
   // 녹음 시작
   const handleStartRecording = async () => {
     if (!selectedLecture) {
-      alert('강의를 선택하거나 새로 생성해주세요')
+      alert(t('console.alert.select.lecture'))
       return
     }
 
@@ -238,7 +240,7 @@ export default function ConsolePage() {
   // 음성 다운로드
   const handleDownloadAudio = async () => {
     if (!selectedLecture?.audio_file_url) {
-      alert('음성 파일이 없습니다')
+      alert(t('console.alert.no.audio'))
       return
     }
 
@@ -247,14 +249,14 @@ export default function ConsolePage() {
       await downloadAudioFile(selectedLecture.audio_file_url, fileName)
     } catch (error) {
       console.error('음성 다운로드 실패:', error)
-      alert('음성 다운로드에 실패했습니다')
+      alert(t('console.alert.audio.download.failed'))
     }
   }
 
   // 대본 다운로드
   const handleDownloadTranscript = () => {
     if (savedCaptions.length === 0) {
-      alert('대본이 없습니다')
+      alert(t('console.alert.no.transcript'))
       return
     }
 
@@ -263,7 +265,7 @@ export default function ConsolePage() {
       downloadTranscript(savedCaptions, fileName)
     } catch (error) {
       console.error('대본 다운로드 실패:', error)
-      alert('대본 다운로드에 실패했습니다')
+      alert(t('console.alert.transcript.download.failed'))
     }
   }
 
@@ -300,7 +302,7 @@ export default function ConsolePage() {
 
   // 강의 삭제
   const handleDeleteLecture = async () => {
-    if (selectedLecture && confirm('정말 삭제하시겠습니까?')) {
+    if (selectedLecture && confirm(t('console.delete.confirm'))) {
       await deleteLecture(selectedLecture.id)
       setSelectedLecture(null)
       setShowMenu(false)
@@ -329,7 +331,7 @@ export default function ConsolePage() {
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Mic className="w-8 h-8 text-white" />
           </div>
-          <p className="text-gray-600">로딩 중...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('console.loading')}</p>
         </div>
       </div>
     )
@@ -386,9 +388,9 @@ export default function ConsolePage() {
                   <h1
                     className="text-xl font-bold text-gray-800 dark:text-gray-200 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     onDoubleClick={handleTitleDoubleClick}
-                    title={selectedLecture && !isRecording ? '더블클릭하여 수정' : ''}
+                    title={selectedLecture && !isRecording ? t('console.edit.double.click') : ''}
                   >
-                    {selectedLecture?.title || '강의를 선택하세요'}
+                    {selectedLecture?.title || t('console.select.lecture')}
                   </h1>
                 )}
 
@@ -413,14 +415,14 @@ export default function ConsolePage() {
                           className="w-full px-4 py-2 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
-                          이름 수정
+                          {t('console.menu.edit')}
                         </button>
                         <button
                           onClick={handleDeleteLecture}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
-                          삭제
+                          {t('console.menu.delete')}
                         </button>
                       </div>
                     )}
@@ -438,7 +440,7 @@ export default function ConsolePage() {
                   className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Play className="w-4 h-4" />
-                  녹음 시작
+                  {t('console.button.start.recording')}
                 </button>
               )}
 
@@ -451,12 +453,12 @@ export default function ConsolePage() {
                     {isPaused ? (
                       <>
                         <Play className="w-4 h-4" />
-                        재개
+                        {t('console.button.resume')}
                       </>
                     ) : (
                       <>
                         <Pause className="w-4 h-4" />
-                        일시정지
+                        {t('console.button.pause')}
                       </>
                     )}
                   </button>
@@ -465,7 +467,7 @@ export default function ConsolePage() {
                     className="px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2"
                   >
                     <Square className="w-4 h-4" />
-                    녹음 종료
+                    {t('console.button.stop.recording')}
                   </button>
                 </>
               )}
@@ -474,7 +476,7 @@ export default function ConsolePage() {
               {isSavingAudio ? (
                 <div className="flex items-center gap-2 px-4 py-2">
                   <Loader2 className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin" />
-                  <span className="text-gray-600 dark:text-gray-400 text-sm">저장 중...</span>
+                  <span className="text-gray-600 dark:text-gray-400 text-sm">{t('console.status.saving')}</span>
                 </div>
               ) : (
                 isCompleted && (
@@ -485,7 +487,7 @@ export default function ConsolePage() {
                         className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2"
                       >
                         <Download className="w-4 h-4" />
-                        음성 다운로드
+                        {t('console.button.download.audio')}
                       </button>
                     )}
                     <button
@@ -494,7 +496,7 @@ export default function ConsolePage() {
                       className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <FileText className="w-4 h-4" />
-                      대본 다운로드
+                      {t('console.button.download.transcript')}
                     </button>
                   </>
                 )
@@ -510,12 +512,12 @@ export default function ConsolePage() {
                 {isPaused ? (
                   <>
                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span className="text-gray-600 font-medium">일시정지</span>
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">{t('console.status.paused')}</span>
                   </>
                 ) : (
                   <>
                     <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                    <span className="text-gray-600 font-medium">녹음 중</span>
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">{t('console.status.recording')}</span>
                   </>
                 )}
               </div>
@@ -524,7 +526,7 @@ export default function ConsolePage() {
 
               {/* 경과 시간 */}
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 dark:text-gray-400">경과 시간:</span>
+                <span className="text-gray-500 dark:text-gray-400">{t('console.status.elapsed.time')}</span>
                 <span className="text-blue-600 dark:text-blue-400 font-mono font-bold text-lg">
                   {formatTime(elapsedTime)}
                 </span>
@@ -534,7 +536,7 @@ export default function ConsolePage() {
 
               {/* 자막 개수 */}
               <span className="text-gray-600 dark:text-gray-400">
-                Deepgram 연결됨 • {deepgram.captions.filter((c) => c.isFinal).length}개 자막
+                {t('console.status.deepgram.connected')} • {deepgram.captions.filter((c) => c.isFinal).length} {t('console.status.captions')}
               </span>
             </div>
           )}
@@ -554,7 +556,7 @@ export default function ConsolePage() {
             <div className="mt-3 flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                좌측에서 강의를 선택하거나 "새 강의 시작" 버튼을 클릭하세요
+                {t('console.info.select.or.create')}
               </p>
             </div>
           )}

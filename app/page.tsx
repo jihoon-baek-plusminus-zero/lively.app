@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ArrowRight, Mic, MessageSquare, Languages, Sparkles } from 'lucide-react'
-import AuthModal from '@/components/AuthModal'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { LanguageSelector } from '@/components/LanguageSelector'
 
 export default function Home() {
   const { user, loading } = useAuth()
+  const { t } = useLanguage()
   const router = useRouter()
-  const [showAuthModal, setShowAuthModal] = useState(false)
 
   // 이미 로그인된 사용자는 콘솔로 리다이렉트
   useEffect(() => {
@@ -26,7 +28,7 @@ export default function Home() {
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Mic className="w-8 h-8 text-white" />
           </div>
-          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('home.loading')}</p>
         </div>
       </div>
     )
@@ -42,16 +44,19 @@ export default function Home() {
               <Mic className="w-5 h-5 text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Livey
+              {t('app.name')}
             </span>
           </div>
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2"
-          >
-            Start using Livey
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <Link
+              href="/login"
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2"
+            >
+              {t('home.header.cta')}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -61,48 +66,46 @@ export default function Home() {
           {/* Main Content */}
           <div className="text-center mb-20">
             <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              강의를 더 똑똑하게
+              {t('home.hero.title')}
               <br />
-              실시간 자막과 AI가 함께
+              {t('home.hero.subtitle')}
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-              실시간 자막으로 놓치는 내용 없이, AI 챗봇으로 즉시 질문하세요.
-              <br />
-              모든 강의가 더 명확하고 이해하기 쉬워집니다.
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto whitespace-pre-line">
+              {t('home.hero.description')}
             </p>
-            <button
-              onClick={() => setShowAuthModal(true)}
+            <Link
+              href="/login"
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-200 inline-flex items-center gap-3"
             >
-              지금 시작하기
+              {t('home.cta.start')}
               <ArrowRight className="w-5 h-5" />
-            </button>
+            </Link>
           </div>
 
           {/* Features Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
             <FeatureCard
               icon={<Mic className="w-6 h-6" />}
-              title="실시간 자막"
-              description="200ms 초저지연으로 강의 내용을 실시간 텍스트로 변환"
+              title={t('feature.realtime.title')}
+              description={t('feature.realtime.desc')}
               gradient="from-blue-500 to-cyan-500"
             />
             <FeatureCard
               icon={<Languages className="w-6 h-6" />}
-              title="다국어 번역"
-              description="한국어, 영어, 일본어 등 실시간 자동 번역 지원"
+              title={t('feature.translation.title')}
+              description={t('feature.translation.desc')}
               gradient="from-purple-500 to-pink-500"
             />
             <FeatureCard
               icon={<MessageSquare className="w-6 h-6" />}
-              title="AI 챗봇"
-              description="강의 내용 기반 즉시 질문 답변, Claude 3.5 Sonnet 탑재"
+              title={t('feature.ai.title')}
+              description={t('feature.ai.desc')}
               gradient="from-orange-500 to-red-500"
             />
             <FeatureCard
               icon={<Sparkles className="w-6 h-6" />}
-              title="스마트 검색"
-              description="PDF 자료와 강의 내용을 AI가 통합 분석하여 답변"
+              title={t('feature.search.title')}
+              description={t('feature.search.desc')}
               gradient="from-green-500 to-emerald-500"
             />
           </div>
@@ -110,7 +113,7 @@ export default function Home() {
           {/* Demo Preview */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700">
             <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
-              Livey 콘솔 미리보기
+              {t('home.demo.title')}
             </h2>
             <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl flex items-center justify-center">
               <div className="text-center">
@@ -118,7 +121,7 @@ export default function Home() {
                   <Mic className="w-10 h-10 text-white" />
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  로그인 후 강의 자막 및 AI 챗봇을 만나보세요
+                  {t('home.demo.description')}
                 </p>
               </div>
             </div>
@@ -134,19 +137,14 @@ export default function Home() {
               <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <Mic className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold">Livey</span>
+              <span className="text-xl font-bold">{t('app.name')}</span>
             </div>
             <p className="text-gray-400 dark:text-gray-500 text-sm">
-              © 2024 Livey. All rights reserved.
+              {t('footer.copyright')}
             </p>
           </div>
         </div>
       </footer>
-
-      {/* Auth Modal */}
-      {showAuthModal && (
-        <AuthModal onClose={() => setShowAuthModal(false)} />
-      )}
     </div>
   )
 }

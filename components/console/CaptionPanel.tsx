@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Languages, Mic } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Caption {
   id: string
@@ -26,6 +27,7 @@ interface CaptionPanelProps {
 }
 
 export default function CaptionPanel({ isRecording, isCompleted, captions, savedCaptions = [] }: CaptionPanelProps) {
+  const { t } = useLanguage()
   const [showTranslation, setShowTranslation] = useState(false)
   const [autoScroll, setAutoScroll] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -73,7 +75,7 @@ export default function CaptionPanel({ isRecording, isCompleted, captions, saved
           <div className="flex items-center gap-2">
             <Mic className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-              {isRecording ? '실시간 자막' : '기록'}
+              {isRecording ? t('caption.panel.realtime') : t('caption.panel.record')}
             </h2>
           </div>
 
@@ -88,7 +90,7 @@ export default function CaptionPanel({ isRecording, isCompleted, captions, saved
               }`}
             >
               <Languages className="w-4 h-4" />
-              {showTranslation ? '한 ↔ 영' : '번역'}
+              {showTranslation ? t('caption.panel.translation.active') : t('caption.panel.translation')}
             </button>
 
             {/* 자동 스크롤 토글 */}
@@ -99,7 +101,7 @@ export default function CaptionPanel({ isRecording, isCompleted, captions, saved
                 onChange={(e) => setAutoScroll(e.target.checked)}
                 className="w-4 h-4 text-blue-600 dark:text-blue-500 rounded focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-600 dark:text-gray-400">자동스크롤</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">{t('caption.panel.auto.scroll')}</span>
             </label>
           </div>
         </div>
@@ -114,7 +116,7 @@ export default function CaptionPanel({ isRecording, isCompleted, captions, saved
                 <Mic className="w-8 h-8 text-gray-400 dark:text-gray-600" />
               </div>
               <p className="text-gray-500 dark:text-gray-400">
-                {isCompleted ? '저장된 자막이 없습니다' : '녹음을 시작하면 자막이 표시됩니다'}
+                {isCompleted ? t('caption.panel.no.saved') : t('caption.panel.start.recording')}
               </p>
             </div>
           </div>
@@ -130,7 +132,7 @@ export default function CaptionPanel({ isRecording, isCompleted, captions, saved
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold rounded">
-                        {caption.speaker || '화자'}
+                        {caption.speaker || t('caption.panel.speaker')}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         {formatTimestamp(caption.timestamp_seconds)}
@@ -157,7 +159,7 @@ export default function CaptionPanel({ isRecording, isCompleted, captions, saved
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold rounded">
-                          {caption.speaker || '화자'}
+                          {caption.speaker || t('caption.panel.speaker')}
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           {caption.timestamp}
@@ -184,7 +186,7 @@ export default function CaptionPanel({ isRecording, isCompleted, captions, saved
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                       <span className="text-xs text-blue-700 dark:text-blue-400 font-semibold">
-                        실시간 입력 중...
+                        {t('caption.panel.live.input')}
                       </span>
                     </div>
                     <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
@@ -196,12 +198,6 @@ export default function CaptionPanel({ isRecording, isCompleted, captions, saved
         )}
       </div>
 
-      {/* Bottom Info */}
-      <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          총 {displayCaptions.length}개의 자막 | Powered by Deepgram Nova-2
-        </p>
-      </div>
     </div>
   )
 }
