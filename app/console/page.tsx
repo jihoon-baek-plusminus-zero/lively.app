@@ -336,7 +336,7 @@ export default function ConsolePage() {
   }
 
   return (
-    <div className="h-screen flex bg-gray-50">
+    <div className="h-screen flex bg-gray-50 dark:bg-gray-950">
       {/* Left Sidebar - 강의 리스트 */}
       <Sidebar
         selectedLectureId={selectedLecture?.id || null}
@@ -473,8 +473,8 @@ export default function ConsolePage() {
               {/* 다운로드 버튼 (종료된 강의만) 또는 로딩 */}
               {isSavingAudio ? (
                 <div className="flex items-center gap-2 px-4 py-2">
-                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-                  <span className="text-gray-600 text-sm">저장 중...</span>
+                  <Loader2 className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin" />
+                  <span className="text-gray-600 dark:text-gray-400 text-sm">저장 중...</span>
                 </div>
               ) : (
                 isCompleted && (
@@ -520,20 +520,20 @@ export default function ConsolePage() {
                 )}
               </div>
 
-              <span className="text-gray-300">|</span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
 
               {/* 경과 시간 */}
               <div className="flex items-center gap-2">
-                <span className="text-gray-500">경과 시간:</span>
-                <span className="text-blue-600 font-mono font-bold text-lg">
+                <span className="text-gray-500 dark:text-gray-400">경과 시간:</span>
+                <span className="text-blue-600 dark:text-blue-400 font-mono font-bold text-lg">
                   {formatTime(elapsedTime)}
                 </span>
               </div>
 
-              <span className="text-gray-300">|</span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
 
               {/* 자막 개수 */}
-              <span className="text-gray-600">
+              <span className="text-gray-600 dark:text-gray-400">
                 Deepgram 연결됨 • {deepgram.captions.filter((c) => c.isFinal).length}개 자막
               </span>
             </div>
@@ -541,9 +541,9 @@ export default function ConsolePage() {
 
           {/* Error Messages */}
           {(audioRecorder.error || deepgram.error) && (
-            <div className="mt-3 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-800">
+            <div className="mt-3 flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-800 dark:text-red-300">
                 {audioRecorder.error || deepgram.error}
               </p>
             </div>
@@ -551,9 +551,9 @@ export default function ConsolePage() {
 
           {/* No Lecture Selected */}
           {!selectedLecture && (
-            <div className="mt-3 flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-blue-800">
+            <div className="mt-3 flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-800 dark:text-blue-300">
                 좌측에서 강의를 선택하거나 "새 강의 시작" 버튼을 클릭하세요
               </p>
             </div>

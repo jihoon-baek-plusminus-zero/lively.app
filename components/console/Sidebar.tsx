@@ -195,10 +195,10 @@ export default function Sidebar({
                       <span
                         className={`text-xs px-2 py-0.5 rounded ${
                           lecture.status === 'recording'
-                            ? 'bg-red-100 text-red-700'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                             : lecture.status === 'completed'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-600'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         }`}
                       >
                         {lecture.status === 'recording'
@@ -207,7 +207,7 @@ export default function Sidebar({
                           ? '완료'
                           : '대기'}
                       </span>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         {formatDuration(lecture.duration_seconds)}
                       </p>
                     </div>

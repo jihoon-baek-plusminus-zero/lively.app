@@ -108,16 +108,16 @@ export default function Home() {
           </div>
 
           {/* Demo Preview */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-200">
-            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
               Livey 콘솔 미리보기
             </h2>
-            <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
+            <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl flex items-center justify-center">
               <div className="text-center">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mic className="w-10 h-10 text-white" />
                 </div>
-                <p className="text-gray-600 text-lg">
+                <p className="text-gray-600 dark:text-gray-400 text-lg">
                   로그인 후 강의 자막 및 AI 챗봇을 만나보세요
                 </p>
               </div>
