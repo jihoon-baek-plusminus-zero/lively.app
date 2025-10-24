@@ -21,21 +21,21 @@ export default function Home() {
   // 로딩 중이면 로딩 화면 표시
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Mic className="w-8 h-8 text-white" />
           </div>
-          <p className="text-gray-600">로딩 중...</p>
+          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200 z-50">
+      <header className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -65,7 +65,7 @@ export default function Home() {
               <br />
               실시간 자막과 AI가 함께
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
               실시간 자막으로 놓치는 내용 없이, AI 챗봇으로 즉시 질문하세요.
               <br />
               모든 강의가 더 명확하고 이해하기 쉬워집니다.
@@ -127,7 +127,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 dark:bg-gray-950 text-white py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -136,7 +136,7 @@ export default function Home() {
               </div>
               <span className="text-xl font-bold">Livey</span>
             </div>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
               © 2024 Livey. All rights reserved.
             </p>
           </div>
@@ -163,14 +163,14 @@ function FeatureCard({
   gradient: string
 }) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-700">
       <div
         className={`w-12 h-12 bg-gradient-to-br ${gradient} rounded-lg flex items-center justify-center mb-4 text-white`}
       >
         {icon}
       </div>
-      <h3 className="text-lg font-semibold mb-2 text-gray-800">{title}</h3>
-      <p className="text-gray-600 text-sm">{description}</p>
+      <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">{title}</h3>
+      <p className="text-gray-600 dark:text-gray-400 text-sm">{description}</p>
     </div>
   )
 }

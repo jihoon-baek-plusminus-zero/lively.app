@@ -345,9 +345,9 @@ export default function ConsolePage() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -366,7 +366,7 @@ export default function ConsolePage() {
                         if (e.key === 'Enter') handleSaveTitle()
                         if (e.key === 'Escape') handleCancelEdit()
                       }}
-                      className="px-3 py-1 border border-blue-500 rounded-lg text-xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-3 py-1 border border-blue-500 dark:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
                       autoFocus
                     />
                     <button
@@ -377,14 +377,14 @@ export default function ConsolePage() {
                     </button>
                     <button
                       onClick={handleCancelEdit}
-                      className="p-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                      className="p-1 bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
                   <h1
-                    className="text-xl font-bold text-gray-800 cursor-pointer hover:text-blue-600 transition-colors"
+                    className="text-xl font-bold text-gray-800 dark:text-gray-200 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     onDoubleClick={handleTitleDoubleClick}
                     title={selectedLecture && !isRecording ? '더블클릭하여 수정' : ''}
                   >
@@ -400,24 +400,24 @@ export default function ConsolePage() {
                         e.stopPropagation()
                         setShowMenu(!showMenu)
                       }}
-                      className="p-1 hover:bg-gray-200 rounded transition-colors"
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
                       disabled={isRecording}
                     >
-                      <MoreVertical className="w-5 h-5 text-gray-500" />
+                      <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </button>
 
                     {showMenu && (
-                      <div className="absolute left-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                      <div className="absolute left-0 mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
                         <button
                           onClick={handleEditTitle}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
                           이름 수정
                         </button>
                         <button
                           onClick={handleDeleteLecture}
-                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                           삭제

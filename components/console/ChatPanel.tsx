@@ -33,18 +33,18 @@ export default function ChatPanel() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
       {/* Panel Header */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-gray-800">AI 채팅</h2>
+            <MessageSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">AI 채팅</h2>
           </div>
 
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-600">Claude 3.5 Sonnet</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Claude 3.5 Sonnet</span>
           </div>
         </div>
       </div>
@@ -54,13 +54,13 @@ export default function ChatPanel() {
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center max-w-md">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="w-8 h-8 text-purple-600" />
+              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="w-8 h-8 text-purple-600 dark:text-purple-400" />
               </div>
-              <p className="text-gray-700 font-medium mb-2">
+              <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">
                 AI에게 질문하세요
               </p>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
                 강의 내용과 업로드한 PDF를 기반으로 답변드립니다
               </p>
             </div>
@@ -78,7 +78,7 @@ export default function ChatPanel() {
                   className={`max-w-[80%] ${
                     message.type === 'user'
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl rounded-tr-sm'
-                      : 'bg-gray-100 text-gray-800 rounded-2xl rounded-tl-sm'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm'
                   } px-4 py-3`}
                 >
                   <p className="whitespace-pre-wrap leading-relaxed">
@@ -87,17 +87,17 @@ export default function ChatPanel() {
 
                   {/* AI 답변의 출처 */}
                   {message.type === 'ai' && message.sources && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs text-gray-600 mb-2 font-semibold">
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-semibold">
                         참고 자료:
                       </p>
                       <div className="space-y-1">
                         {message.sources.map((source, idx) => (
                           <div
                             key={idx}
-                            className="text-xs text-gray-600 flex items-center gap-1"
+                            className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1"
                           >
-                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                            <div className="w-1 h-1 bg-gray-400 dark:bg-gray-600 rounded-full"></div>
                             {source}
                           </div>
                         ))}
@@ -117,10 +117,10 @@ export default function ChatPanel() {
 
       {/* Attached Files */}
       {attachedFiles.length > 0 && (
-        <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
           <div className="flex items-center gap-2 mb-2">
-            <Paperclip className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">
+            <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               첨부된 자료:
             </span>
           </div>
@@ -128,11 +128,11 @@ export default function ChatPanel() {
             {attachedFiles.map((file, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm"
+                className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
               >
-                <FileText className="w-4 h-4 text-blue-600" />
-                <span className="text-gray-700">{file}</span>
-                <button className="text-gray-400 hover:text-gray-600">
+                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-gray-700 dark:text-gray-300">{file}</span>
+                <button className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -142,10 +142,10 @@ export default function ChatPanel() {
       )}
 
       {/* Input Area */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-end gap-3">
           {/* File Upload Button */}
-          <button className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+          <button className="p-2.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
             <Paperclip className="w-5 h-5" />
           </button>
 
@@ -161,7 +161,7 @@ export default function ChatPanel() {
                 }
               }}
               placeholder="AI에게 질문하세요... (Shift+Enter로 줄바꿈)"
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none"
+              className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
               rows={2}
             />
           </div>
@@ -176,7 +176,7 @@ export default function ChatPanel() {
           </button>
         </div>
 
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           AI는 강의 자막과 업로드된 PDF를 참고하여 답변합니다
         </p>
       </div>
