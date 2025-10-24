@@ -1,37 +1,97 @@
 'use client'
 
-import { useState } from 'react'
-import { MessageSquare, Send, Paperclip, FileText, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { MessageSquare, Send, Loader2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useChatMessages } from '@/hooks/useChatMessages'
+import ReactMarkdown from 'react-markdown'
 
-// 임시 더미 채팅 데이터
-const dummyMessages = [
-  {
-    id: '1',
-    type: 'user' as const,
-    text: '정규화가 정확히 무엇인가요?',
-    timestamp: '10:23',
-  },
-  {
-    id: '2',
-    type: 'ai' as const,
-    text: '정규화(Normalization)는 데이터베이스 설계 과정에서 데이터의 중복을 최소화하고 데이터 무결성을 유지하기 위한 체계적인 방법입니다.\n\n방금 강의에서 교수님께서 설명하신 것처럼, 정규화는 다음과 같은 목적을 가집니다:\n\n1. **데이터 중복 최소화**: 같은 데이터가 여러 곳에 저장되는 것을 방지\n2. **데이터 무결성 유지**: 데이터의 일관성과 정확성 보장\n3. **이상 현상 제거**: 삽입, 수정, 삭제 시 발생할 수 있는 문제 방지',
-    timestamp: '10:23',
-    sources: ['강의 자막 00:00:23', 'database_lecture.pdf'],
-  },
-]
+interface ChatPanelProps {
+  lectureId: string | null
+}
 
-export default function ChatPanel() {
+export default function ChatPanel({ lectureId }: ChatPanelProps) {
   const { t } = useLanguage()
-  const [messages] = useState(dummyMessages)
+  const { messages, loading: loadingMessages, saveMessage } = useChatMessages(lectureId)
   const [inputText, setInputText] = useState('')
-  const [attachedFiles] = useState<string[]>(['database_lecture.pdf'])
+  const [isGenerating, setIsGenerating] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const handleSend = () => {
-    if (!inputText.trim()) return
-    // TODO: AI 챗봇 메시지 전송
-    console.log('Sending message:', inputText)
+  // 새 메시지가 추가되면 스크롤을 아래로
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const handleSend = async () => {
+    if (!inputText.trim() || !lectureId || isGenerating) return
+
+    const userMessage = inputText.trim()
     setInputText('')
+    setIsGenerating(true)
+
+    try {
+      // 1. 사용자 메시지 저장
+      await saveMessage('user', userMessage)
+
+      // 2. OpenAI API 호출
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            ...messages.map(msg => ({
+              role: msg.role,
+              content: msg.content
+            })),
+            {
+              role: 'user',
+              content: userMessage
+            }
+          ]
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response')
+      }
+
+      const data = await response.json()
+      const aiMessage = data.message
+
+      // 3. AI 응답 저장
+      await saveMessage('assistant', aiMessage)
+
+    } catch (error) {
+      console.error('채팅 전송 실패:', error)
+      alert('메시지 전송에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  if (!lectureId) {
+    return (
+      <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('chat.title')}</h2>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            </div>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              {t('console.welcome.select')}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -48,7 +108,11 @@ export default function ChatPanel() {
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 ? (
+        {loadingMessages ? (
+          <div className="h-full flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-spin" />
+          </div>
+        ) : messages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center max-w-md">
               <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -68,84 +132,58 @@ export default function ChatPanel() {
               <div
                 key={message.id}
                 className={`flex ${
-                  message.type === 'user' ? 'justify-end' : 'justify-start'
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
                 <div
                   className={`max-w-[80%] ${
-                    message.type === 'user'
+                    message.role === 'user'
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl rounded-tr-sm'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm'
                   } px-4 py-3`}
                 >
-                  <p className="whitespace-pre-wrap leading-relaxed">
-                    {message.text}
-                  </p>
-
-                  {/* AI 답변의 출처 */}
-                  {message.type === 'ai' && message.sources && (
-                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-semibold">
-                        {t('chat.sources')}
-                      </p>
-                      <div className="space-y-1">
-                        {message.sources.map((source, idx) => (
-                          <div
-                            key={idx}
-                            className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1"
-                          >
-                            <div className="w-1 h-1 bg-gray-400 dark:bg-gray-600 rounded-full"></div>
-                            {source}
-                          </div>
-                        ))}
-                      </div>
+                  {message.role === 'user' ? (
+                    <p className="whitespace-pre-wrap leading-relaxed">
+                      {message.content}
+                    </p>
+                  ) : (
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
                     </div>
                   )}
 
                   <div className="mt-2 text-xs opacity-70">
-                    {message.timestamp}
+                    {new Date(message.created_at).toLocaleTimeString('ko-KR', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
                 </div>
               </div>
             ))}
+
+            {/* AI 응답 생성 중 표시 */}
+            {isGenerating && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 text-purple-600 dark:text-purple-400 animate-spin" />
+                    <span className="text-gray-600 dark:text-gray-400 text-sm">
+                      {t('chat.generating')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </>
         )}
       </div>
 
-      {/* Attached Files */}
-      {attachedFiles.length > 0 && (
-        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-          <div className="flex items-center gap-2 mb-2">
-            <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('chat.attached.files')}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {attachedFiles.map((file, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-              >
-                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-gray-700 dark:text-gray-300">{file}</span>
-                <button className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Input Area */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-end gap-3">
-          {/* File Upload Button */}
-          <button className="p-2.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-            <Paperclip className="w-5 h-5" />
-          </button>
-
           {/* Input Field */}
           <div className="flex-1 relative">
             <textarea
@@ -158,7 +196,8 @@ export default function ChatPanel() {
                 }
               }}
               placeholder={t('chat.input.placeholder')}
-              className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              disabled={isGenerating}
+              className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none placeholder:text-gray-400 dark:placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
               rows={2}
             />
           </div>
@@ -166,10 +205,14 @@ export default function ChatPanel() {
           {/* Send Button */}
           <button
             onClick={handleSend}
-            disabled={!inputText.trim()}
+            disabled={!inputText.trim() || isGenerating}
             className="p-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Send className="w-5 h-5" />
+            {isGenerating ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
           </button>
         </div>
 

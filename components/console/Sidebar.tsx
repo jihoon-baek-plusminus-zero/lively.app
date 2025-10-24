@@ -42,10 +42,15 @@ export default function Sidebar({
     setShowLanguageModal(false)
 
     const now = new Date()
-    const title = `강의 ${now.toLocaleDateString('ko-KR')} ${now.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })}`
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const hours = now.getHours()
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const ampm = hours >= 12 ? 'pm' : 'am'
+    const displayHours = hours % 12 || 12
+
+    const title = `${year}.${month}.${day} ${displayHours}:${minutes} ${ampm} ${t('sidebar.default.title.recording')}`
 
     const newLecture = await createLecture(title, audioLanguages, translateTo)
     setCreating(false)
@@ -207,6 +212,8 @@ export default function Sidebar({
                             ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                             : lecture.status === 'completed'
                             ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                            : lecture.status === 'not_recorded'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         }`}
                       >
@@ -214,6 +221,8 @@ export default function Sidebar({
                           ? t('sidebar.status.recording')
                           : lecture.status === 'completed'
                           ? t('sidebar.status.completed')
+                          : lecture.status === 'not_recorded'
+                          ? t('sidebar.status.not.recorded')
                           : t('sidebar.status.pending')}
                       </span>
                       <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -260,11 +269,6 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Language Selector */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <LanguageSelector />
-      </div>
-
       {/* Theme Toggle */}
       <ThemeToggle />
 
@@ -280,21 +284,25 @@ export default function Sidebar({
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
           </div>
+          {/* Language Selector - Compact Square */}
+          <div className="flex-shrink-0">
+            <LanguageSelector position="top" />
+          </div>
         </div>
-        <div className="space-y-2">
-          <button
-            onClick={() => router.push('/profile')}
-            className="w-full py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
-          >
-            <User className="w-4 h-4" />
-            {t('sidebar.my.profile')}
-          </button>
+        <div className="flex gap-2">
           <button
             onClick={handleLogout}
-            className="w-full py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <LogOut className="w-4 h-4" />
             {t('sidebar.logout')}
+          </button>
+          <button
+            onClick={() => router.push('/profile')}
+            className="flex-1 py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <User className="w-4 h-4" />
+            {t('sidebar.my.profile')}
           </button>
         </div>
       </div>

@@ -16,7 +16,19 @@ export default function LanguageSettingsModal({ onConfirm, onClose }: LanguageSe
 
   const [selectedLanguage, setSelectedLanguage] = useState<string>(language)
   const [translateEnabled, setTranslateEnabled] = useState(false)
-  const [translateTo, setTranslateTo] = useState<string>(language)
+
+  // 번역 언어 초기값: 녹음 언어와 다른 첫 번째 언어
+  const getDefaultTranslateLang = (audioLang: string) => {
+    return AVAILABLE_LANGUAGES.find(lang => lang !== audioLang) || 'en'
+  }
+  const [translateTo, setTranslateTo] = useState<string>(getDefaultTranslateLang(language))
+
+  // 녹음 언어 변경시 번역 언어도 업데이트
+  useEffect(() => {
+    if (selectedLanguage === translateTo) {
+      setTranslateTo(getDefaultTranslateLang(selectedLanguage))
+    }
+  }, [selectedLanguage])
 
   const handleConfirm = () => {
     // 선택한 단일 언어만 사용
@@ -94,22 +106,39 @@ export default function LanguageSettingsModal({ onConfirm, onClose }: LanguageSe
               </button>
             </div>
 
+            {/* 번역 활성화 시점 안내 - 항상 표시 */}
+            <p className="mt-3 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              💡 {t('language.settings.translate.warning.timing')}
+            </p>
+
             {translateEnabled && (
-              <div className="mt-3">
-                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  {t('language.settings.translate.to')}
-                </label>
-                <select
-                  value={translateTo}
-                  onChange={(e) => setTranslateTo(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                >
-                  {AVAILABLE_LANGUAGES.map((lang) => (
-                    <option key={lang} value={lang}>
-                      {t(`language.name.${lang}` as any)}
-                    </option>
-                  ))}
-                </select>
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-2">
+                    {t('language.settings.translate.to')}
+                  </label>
+                  <select
+                    value={translateTo}
+                    onChange={(e) => setTranslateTo(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  >
+                    {AVAILABLE_LANGUAGES.filter(lang => lang !== selectedLanguage).map((lang) => (
+                      <option key={lang} value={lang}>
+                        {t(`language.name.${lang}` as any)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Translation Warnings */}
+                <div className="space-y-2">
+                  <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                    ⚠️ {t('language.settings.translate.warning.cost')}
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                    ⚠️ {t('language.settings.translate.warning.unchangeable')}
+                  </p>
+                </div>
               </div>
             )}
           </div>

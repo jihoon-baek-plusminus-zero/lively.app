@@ -13,7 +13,11 @@ const languages: { code: Language; name: string; flag: string }[] = [
   { code: 'es', name: 'Español', flag: '🇪🇸' },
 ]
 
-export function LanguageSelector() {
+interface LanguageSelectorProps {
+  position?: 'top' | 'bottom'
+}
+
+export function LanguageSelector({ position = 'bottom' }: LanguageSelectorProps) {
   const { language, setLanguage } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -36,18 +40,14 @@ export function LanguageSelector() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
+        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
         title="Select Language"
       >
-        <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-        <span className="text-xl">{currentLanguage?.flag}</span>
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {currentLanguage?.name}
-        </span>
+        <span className="text-lg">{currentLanguage?.flag}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 right-0 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+        <div className={`absolute ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} right-0 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50`}>
           {languages.map((lang) => (
             <button
               key={lang.code}

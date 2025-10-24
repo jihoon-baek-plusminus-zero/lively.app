@@ -9,6 +9,7 @@ export interface Caption {
   language: string
   timestamp_seconds: number
   is_final: boolean
+  translated_text?: string // 번역된 텍스트 (optional)
   created_at: string
 }
 

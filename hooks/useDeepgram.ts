@@ -54,8 +54,9 @@ export function useDeepgram(): UseDeepgramReturn {
         smart_format: true,
         punctuate: true,
         interim_results: true, // 중간 결과 포함
-        utterance_end_ms: 1000,
+        utterance_end_ms: 2000, // 2초로 증가 (기본 1초)
         vad_events: true,
+        endpointing: 500, // 500ms 침묵 후 문장 종료
       }
 
       const connection = deepgram.listen.live(liveOptions)

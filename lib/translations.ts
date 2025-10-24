@@ -332,11 +332,11 @@ export const translations = {
 
   // Sidebar
   'sidebar.new.lecture': {
-    ko: '새 강의 시작',
-    en: 'New Lecture',
-    ja: '新しい講義を開始',
-    zh: '开始新讲座',
-    es: 'Nueva conferencia',
+    ko: '새 녹음',
+    en: 'New Record',
+    ja: '新しい録音',
+    zh: '新录音',
+    es: 'Nueva grabación',
   },
   'sidebar.creating': {
     ko: '생성 중...',
@@ -365,6 +365,13 @@ export const translations = {
     ja: '新しい講義を開始してください',
     zh: '开始新讲座',
     es: 'Inicia una nueva conferencia',
+  },
+  'sidebar.default.title.recording': {
+    ko: '녹음',
+    en: 'recording',
+    ja: '録音',
+    zh: '录音',
+    es: 'grabación',
   },
   'sidebar.edit': {
     ko: '이름 수정',
@@ -408,6 +415,13 @@ export const translations = {
     zh: '待处理',
     es: 'Pendiente',
   },
+  'sidebar.status.not.recorded': {
+    ko: '녹음 안됨',
+    en: 'Not Recorded',
+    ja: '録音なし',
+    zh: '未录音',
+    es: 'No grabado',
+  },
   'sidebar.menu.edit': {
     ko: '이름 수정',
     en: 'Edit Name',
@@ -446,11 +460,11 @@ export const translations = {
 
   // Console Header
   'console.select.lecture': {
-    ko: '강의를 선택하세요',
-    en: 'Select a lecture',
-    ja: '講義を選択してください',
-    zh: '选择讲座',
-    es: 'Selecciona una conferencia',
+    ko: '녹음을 선택하세요',
+    en: 'Select a record',
+    ja: '録音を選択してください',
+    zh: '选择录音',
+    es: 'Selecciona una grabación',
   },
   'console.start.recording': {
     ko: '녹음 시작',
@@ -494,6 +508,13 @@ export const translations = {
     zh: '下载音频',
     es: 'Descargar audio',
   },
+  'console.audio.not.saved': {
+    ko: '오디오가 데이터베이스에 저장되지 않았습니다',
+    en: 'The Audio is not saved to the database',
+    ja: 'オーディオがデータベースに保存されていません',
+    zh: '音频未保存到数据库',
+    es: 'El audio no se guardó en la base de datos',
+  },
   'console.download.transcript': {
     ko: '대본 다운로드',
     en: 'Download Transcript',
@@ -523,11 +544,32 @@ export const translations = {
     es: 'subtítulos',
   },
   'console.no.lecture.selected': {
-    ko: '좌측에서 강의를 선택하거나 "새 강의 시작" 버튼을 클릭하세요',
-    en: 'Select a lecture from the left or click "New Lecture" button',
-    ja: '左側から講義を選択するか、「新しい講義を開始」ボタンをクリックしてください',
-    zh: '从左侧选择讲座或点击"开始新讲座"按钮',
-    es: 'Selecciona una conferencia de la izquierda o haz clic en el botón "Nueva conferencia"',
+    ko: '좌측에서 녹음을 선택하거나 "새 녹음" 버튼을 클릭하세요',
+    en: 'Select a record from the left or click "New Record" button',
+    ja: '左側から録音を選択するか、「新しい録音」ボタンをクリックしてください',
+    zh: '从左侧选择录音或点击"新录音"按钮',
+    es: 'Selecciona una grabación de la izquierda o haz clic en el botón "Nueva grabación"',
+  },
+  'console.welcome.title': {
+    ko: 'Livey에 오신 것을 환영합니다',
+    en: 'Welcome to Livey',
+    ja: 'Liveyへようこそ',
+    zh: '欢迎来到Livey',
+    es: 'Bienvenido a Livey',
+  },
+  'console.welcome.select': {
+    ko: '왼쪽에서 녹음을 선택하거나',
+    en: 'Select a record from left',
+    ja: '左から録音を選択するか',
+    zh: '从左侧选择录音',
+    es: 'Selecciona una grabación de la izquierda',
+  },
+  'console.welcome.create': {
+    ko: '"+ 새 녹음" 버튼을 클릭하여 새로 만드세요!',
+    en: 'or click "+ New Record" to make new one!',
+    ja: 'または「+ 新しい録音」をクリックして新規作成！',
+    zh: '或点击"+ 新录音"创建新的！',
+    es: 'o haz clic en "+ Nueva grabación" para crear una nueva!',
   },
   'console.edit.double.click': {
     ko: '더블클릭하여 수정',
@@ -699,6 +741,41 @@ export const translations = {
     ja: '読み込み中...',
     zh: '加载中...',
     es: 'Cargando...',
+  },
+  'console.translation.toggle': {
+    ko: '실시간 번역',
+    en: 'Live Translation',
+    ja: 'リアルタイム翻訳',
+    zh: '实时翻译',
+    es: 'Traducción en vivo',
+  },
+  'console.translation.to': {
+    ko: '번역 언어:',
+    en: 'Translate to:',
+    ja: '翻訳先：',
+    zh: '翻译为：',
+    es: 'Traducir a:',
+  },
+  'console.translation.translate': {
+    ko: '번역하기',
+    en: 'Translate',
+    ja: '翻訳する',
+    zh: '翻译',
+    es: 'Traducir',
+  },
+  'console.translation.translated': {
+    ko: '번역됨',
+    en: 'Translated',
+    ja: '翻訳済み',
+    zh: '已翻译',
+    es: 'Traducido',
+  },
+  'console.translation.translating': {
+    ko: '실시간 번역중',
+    en: 'Translating Live',
+    ja: 'リアルタイム翻訳中',
+    zh: '实时翻译中',
+    es: 'Traduciendo en vivo',
   },
 
   // Caption Panel
@@ -908,6 +985,13 @@ export const translations = {
     zh: 'AI根据讲座字幕和上传的PDF回答',
     es: 'La IA responde basándose en los subtítulos de la conferencia y PDFs cargados',
   },
+  'chat.generating': {
+    ko: 'AI가 답변을 생성하고 있습니다...',
+    en: 'AI is generating a response...',
+    ja: 'AIが回答を生成しています...',
+    zh: 'AI正在生成回答...',
+    es: 'La IA está generando una respuesta...',
+  },
 
   // Theme Toggle
   'theme.light': {
@@ -1064,6 +1148,48 @@ export const translations = {
     ja: '翻訳先言語',
     zh: '翻译为',
     es: 'Traducir a',
+  },
+  'language.settings.translate.warning.cost': {
+    ko: '번역 기능 사용 시 시간이 2배로 차감됩니다.',
+    en: 'Using translation will deduct 2x time.',
+    ja: '翻訳機能使用時、時間が2倍消費されます。',
+    zh: '使用翻译功能将扣除2倍时间。',
+    es: 'Usar traducción deducirá 2x tiempo.',
+  },
+  'language.settings.translate.warning.unchangeable': {
+    ko: '번역 언어는 설정 후 변경할 수 없습니다.',
+    en: 'Translation language cannot be changed after setup.',
+    ja: '翻訳言語は設定後変更できません。',
+    zh: '翻译语言设置后无法更改。',
+    es: 'El idioma de traducción no se puede cambiar después de configurar.',
+  },
+  'language.settings.translate.warning.timing': {
+    ko: '녹음 도중 자막번역을 활성화 할 시 활성화 이전 시점은 번역이 되지 않습니다. 전체 번역이 필요한 경우 녹음 전 활성화를 해주세요',
+    en: 'If translation is activated during recording, content before activation will not be translated. For full translation, please activate before recording.',
+    ja: '録音中に字幕翻訳を有効にすると、有効化以前の時点は翻訳されません。全体翻訳が必要な場合は録音前に有効化してください。',
+    zh: '如果在录制期间激活翻译，激活前的内容将不会被翻译。如需完整翻译，请在录制前激活。',
+    es: 'Si se activa la traducción durante la grabación, el contenido anterior a la activación no se traducirá. Para traducción completa, active antes de grabar.',
+  },
+  'console.saving.title': {
+    ko: '저장중',
+    en: 'Saving',
+    ja: '保存中',
+    zh: '保存中',
+    es: 'Guardando',
+  },
+  'console.saving.warning': {
+    ko: '절대로 창을 끄거나 나가지 마십시오',
+    en: 'Do not close or leave this window',
+    ja: '絶対にウィンドウを閉じたり離れたりしないでください',
+    zh: '请勿关闭或离开此窗口',
+    es: 'No cierre ni salga de esta ventana',
+  },
+  'console.saving.detail': {
+    ko: '저장이 실패할 수 있습니다',
+    en: 'Saving may fail',
+    ja: '保存が失敗する可能性があります',
+    zh: '保存可能失败',
+    es: 'El guardado puede fallar',
   },
   'language.settings.start': {
     ko: '강의 시작',

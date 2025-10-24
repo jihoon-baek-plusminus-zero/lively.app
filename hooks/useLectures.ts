@@ -7,7 +7,7 @@ export interface Lecture {
   user_id: string
   title: string
   description: string | null
-  status: 'draft' | 'recording' | 'completed'
+  status: 'draft' | 'recording' | 'completed' | 'not_recorded'
   audio_file_url: string | null
   started_at: string | null
   ended_at: string | null
@@ -210,6 +210,28 @@ export function useLectures() {
     [fetchLectures]
   )
 
+  const updateTranslateTo = useCallback(
+    async (lectureId: string, translateTo: string) => {
+      try {
+        const { error } = await supabase
+          .from('lectures')
+          .update({
+            translate_to: translateTo,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', lectureId)
+
+        if (error) throw error
+
+        await fetchLectures()
+      } catch (err: any) {
+        console.error('번역 언어 설정 실패:', err)
+        setError(err.message)
+      }
+    },
+    [fetchLectures]
+  )
+
   return {
     lectures,
     loading,
@@ -220,6 +242,7 @@ export function useLectures() {
     deleteLecture,
     updateAudioUrl,
     updateLectureTitle,
+    updateTranslateTo,
     refetch: fetchLectures,
   }
 }

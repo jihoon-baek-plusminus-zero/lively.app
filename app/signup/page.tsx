@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, User, ArrowLeft, Loader2, Mic } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function SignupPage() {

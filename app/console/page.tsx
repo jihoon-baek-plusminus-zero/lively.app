@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/console/Sidebar'
 import CaptionPanel from '@/components/console/CaptionPanel'
 import ChatPanel from '@/components/console/ChatPanel'
+import TranslationActivationModal from '@/components/console/TranslationActivationModal'
 import { Play, Square, Mic, AlertCircle, Pause, Download, FileText, Loader2, MoreVertical, Edit2, Trash2, Check, X } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -14,6 +15,7 @@ import { useLectures, type Lecture } from '@/hooks/useLectures'
 import { useCaptions } from '@/hooks/useCaptions'
 import { useCaptionsList } from '@/hooks/useCaptionsList'
 import { uploadAudioFile, downloadAudioFile, downloadTranscript } from '@/lib/storage'
+import { supabase } from '@/lib/supabase'
 
 export default function ConsolePage() {
   const { user, loading } = useAuth()
@@ -27,18 +29,25 @@ export default function ConsolePage() {
   const [showMenu, setShowMenu] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
+  const [translationEnabled, setTranslationEnabled] = useState(false)
+  const [translationTargetLang, setTranslationTargetLang] = useState<string>('en')
+  const [showTranslationModal, setShowTranslationModal] = useState(false)
+  const [realTimeTranslations, setRealTimeTranslations] = useState<Record<string, string>>({})
+  const [captionIdMapping, setCaptionIdMapping] = useState<Record<string, string>>({}) // 임시ID -> DB ID 매핑
+  const [isSavingTranslations, setIsSavingTranslations] = useState(false) // 번역 저장 중 상태
+  const [processedCaptionIds, setProcessedCaptionIds] = useState<Set<string>>(new Set()) // 이미 처리된 자막 ID
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Hooks
   const audioRecorder = useAudioRecorder()
   const deepgram = useDeepgram()
-  const { lectures, startLecture, endLecture, updateAudioUrl, updateLectureTitle, deleteLecture, refetch: refetchLectures } = useLectures()
-  const { saveCaption } = useCaptions()
+  const { lectures, startLecture, endLecture, updateAudioUrl, updateLectureTitle, updateTranslateTo, deleteLecture, refetch: refetchLectures } = useLectures()
+  const { saveCaption, updateCaptionTranslation } = useCaptions()
   const { captions: savedCaptions } = useCaptionsList(selectedLecture?.id || null)
 
   // 녹음 중: 오디오 녹음 중이고 (일시정지 아니거나 Deepgram 연결됨)
   const isRecording = audioRecorder.isRecording && (isPaused || deepgram.isConnected)
-  const isCompleted = selectedLecture?.status === 'completed'
+  const isCompleted = selectedLecture?.status === 'completed' || selectedLecture?.status === 'not_recorded'
   // 실제 녹음 진행 중 (일시정지 아님)
   const isActiveRecording = isRecording && !isPaused
 
@@ -106,27 +115,106 @@ export default function ConsolePage() {
     }
   }, [user, loading, router])
 
-  // Final 자막을 Supabase에 저장
+  // 강의 선택 시 번역 설정 자동 적용
+  useEffect(() => {
+    if (selectedLecture) {
+      if (selectedLecture.translate_to) {
+        setTranslationEnabled(true)
+        setTranslationTargetLang(selectedLecture.translate_to)
+      } else {
+        setTranslationEnabled(false)
+      }
+    }
+  }, [selectedLecture])
+
+
+  // Final 자막을 Supabase에 저장 (한 번만 + 번역 동시 처리)
   useEffect(() => {
     if (!selectedLecture) return
 
     const finalCaptions = deepgram.captions.filter((c) => c.isFinal)
-    if (finalCaptions.length > 0) {
-      const lastCaption = finalCaptions[finalCaptions.length - 1]
+
+    // 새로운 자막만 처리 (중복 방지)
+    const newCaptions = finalCaptions.filter(c => !processedCaptionIds.has(c.id))
+
+    newCaptions.forEach(async (caption) => {
+      // 중복 방지: 이미 처리된 것으로 표시
+      setProcessedCaptionIds(prev => {
+        const newSet = new Set(prev)
+        newSet.add(caption.id)
+        return newSet
+      })
 
       // 녹음 시작 이후 경과 시간 계산
       const elapsedSeconds = recordingStartTime > 0
         ? (Date.now() - recordingStartTime) / 1000
         : 0
 
-      saveCaption(
-        selectedLecture.id,
-        lastCaption.text,
-        elapsedSeconds,
-        lastCaption.speaker
-      )
-    }
-  }, [deepgram.captions, selectedLecture, saveCaption, recordingStartTime])
+      console.log('🎯 새 자막 처리 시작:', caption.id, caption.text.substring(0, 30))
+
+      try {
+        let translatedText: string | undefined = undefined
+
+        // 번역이 활성화된 경우 먼저 번역 수행
+        if (translationEnabled && translationTargetLang) {
+          console.log('🌐 번역 API 호출:', caption.text.substring(0, 30))
+
+          try {
+            const response = await fetch('/api/translate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: caption.text,
+                targetLang: translationTargetLang
+              }),
+            })
+
+            if (response.ok) {
+              const data = await response.json()
+              translatedText = data.translatedText
+              console.log('✅ 번역 완료:', translatedText?.substring(0, 30))
+
+              // UI에 번역 즉시 표시
+              setRealTimeTranslations(prev => ({
+                ...prev,
+                [caption.id]: translatedText!
+              }))
+            } else {
+              console.warn('⚠️ 번역 API 응답 실패:', response.status)
+            }
+          } catch (error) {
+            console.error('❌ 번역 API 오류:', error)
+          }
+        }
+
+        // 자막과 번역을 동시에 저장
+        console.log('💾 자막 저장 (번역 포함):', {
+          text: caption.text.substring(0, 30),
+          translated: translatedText ? translatedText.substring(0, 30) : '없음'
+        })
+
+        const dbCaptionId = await saveCaption(
+          selectedLecture.id,
+          caption.text,
+          elapsedSeconds,
+          caption.speaker,
+          translatedText // 번역과 함께 저장
+        )
+
+        if (dbCaptionId) {
+          console.log('✅ 자막 DB 저장 완료:', dbCaptionId, '번역 여부:', !!translatedText)
+
+          // ID 매핑 저장 (나중에 필요한 경우를 위해)
+          setCaptionIdMapping(prev => ({
+            ...prev,
+            [caption.id]: dbCaptionId
+          }))
+        }
+      } catch (error) {
+        console.error('❌ 자막 처리 실패:', caption.id, error)
+      }
+    })
+  }, [deepgram.captions, selectedLecture, saveCaption, recordingStartTime, translationEnabled, translationTargetLang])
 
   // 녹음 시작
   const handleStartRecording = async () => {
@@ -136,6 +224,11 @@ export default function ConsolePage() {
     }
 
     console.log('🎬 녹음 시작 프로세스 시작...')
+
+    // 실시간 번역 데이터, ID 매핑, 처리된 자막 초기화
+    setRealTimeTranslations({})
+    setCaptionIdMapping({})
+    setProcessedCaptionIds(new Set())
 
     try {
       // 1. 오디오 녹음 시작 (스트림 직접 반환)
@@ -205,6 +298,9 @@ export default function ConsolePage() {
       // 2. 오디오 녹음 중지 및 Blob 가져오기
       const audioBlob = await audioRecorder.stopRecording()
 
+      // 번역은 이미 실시간으로 자막과 함께 저장되었으므로 추가 저장 불필요
+      console.log('✅ 모든 자막과 번역이 실시간으로 저장됨')
+
       // 3. 오디오 파일 업로드
       if (audioBlob) {
         console.log('📤 오디오 파일 업로드 중...')
@@ -217,7 +313,7 @@ export default function ConsolePage() {
         }
       }
 
-      // 4. 강의 상태를 'completed'로 변경
+      // 5. 강의 상태를 'completed'로 변경
       await endLecture(selectedLecture.id)
 
       // 5. 강의 목록 새로고침
@@ -228,9 +324,11 @@ export default function ConsolePage() {
       setElapsedTime(0)
       setIsPaused(false)
 
-      console.log('✅ 녹음 종료 완료 - 페이지 새로고침')
+      console.log('✅ 녹음 종료 완료 - 3초 후 페이지 새로고침')
 
-      // 7. 강의 ID를 URL에 저장하고 페이지 새로고침
+      // 7. 3초 대기 후 강의 ID를 URL에 저장하고 페이지 새로고침
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
       sessionStorage.setItem('lastCompletedLecture', selectedLecture.id)
       window.location.reload()
     } catch (error) {
@@ -323,6 +421,66 @@ export default function ConsolePage() {
       setSelectedLecture(lecture)
       console.log('📋 강의 선택:', lecture.title, '(상태:', lecture.status, ')')
     }
+  }
+
+  // 번역 토글 핸들러 (비활성화 상태에서만 모달 띄움)
+  const handleTranslationToggle = (enabled: boolean) => {
+    if (!selectedLecture) return
+
+    // 이미 번역이 설정되어 있으면 변경 불가
+    if (selectedLecture.translate_to) return
+
+    // 번역을 켜려고 하면 모달 표시
+    if (enabled) {
+      setShowTranslationModal(true)
+    }
+  }
+
+  // 번역 완료 콜백 - CaptionPanel에서 번역 완료 시 호출됨 (메모리에만 저장)
+  const handleTranslationComplete = (captionId: string, translatedText: string) => {
+    console.log('🔄 번역 완료 (메모리 저장):', captionId, '→', translatedText.substring(0, 30))
+
+    // 실시간 번역 상태 업데이트 (메모리에만 저장, DB 저장은 녹음 종료 시)
+    setRealTimeTranslations(prev => ({
+      ...prev,
+      [captionId]: translatedText
+    }))
+  }
+
+  // 일괄 번역 완료 콜백 - 완료된 강의 번역 시
+  const handleBulkTranslationComplete = async (translations: Record<string, string>) => {
+    console.log('💾 완료된 강의 번역 일괄 저장 시작...')
+    setIsSavingTranslations(true)
+
+    try {
+      // 모든 번역 업데이트 실행
+      const updates = Object.entries(translations).map(([captionId, translatedText]) =>
+        updateCaptionTranslation(captionId, translatedText)
+      )
+
+      await Promise.all(updates)
+      console.log('✅ 번역 일괄 저장 완료:', updates.length, '개')
+    } catch (error) {
+      console.error('❌ 번역 저장 실패:', error)
+    } finally {
+      setIsSavingTranslations(false)
+    }
+  }
+
+  // 번역 활성화 확인 핸들러
+  const handleConfirmTranslation = async (targetLang: string) => {
+    if (!selectedLecture) return
+
+    await updateTranslateTo(selectedLecture.id, targetLang)
+    setTranslationEnabled(true)
+    setTranslationTargetLang(targetLang)
+    setShowTranslationModal(false)
+
+    // selectedLecture 업데이트
+    setSelectedLecture({
+      ...selectedLecture,
+      translate_to: targetLang
+    })
   }
 
   // 로딩 중이거나 사용자가 없으면 로딩 화면
@@ -483,14 +641,20 @@ export default function ConsolePage() {
               ) : (
                 isCompleted && (
                   <>
-                    {selectedLecture.audio_file_url && (
-                      <button
-                        onClick={handleDownloadAudio}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        {t('console.button.download.audio')}
-                      </button>
+                    {selectedLecture.status === 'not_recorded' ? (
+                      <div className="px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm text-yellow-800 dark:text-yellow-300">
+                        {t('console.audio.not.saved')}
+                      </div>
+                    ) : (
+                      selectedLecture.audio_file_url && (
+                        <button
+                          onClick={handleDownloadAudio}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                          {t('console.button.download.audio')}
+                        </button>
+                      )
                     )}
                     <button
                       onClick={handleDownloadTranscript}
@@ -566,18 +730,75 @@ export default function ConsolePage() {
 
         {/* Main 2-Pane Layout */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Pane - 자막 */}
-          <CaptionPanel
-            isRecording={isActiveRecording}
-            isCompleted={isCompleted}
-            captions={deepgram.captions}
-            savedCaptions={savedCaptions}
-          />
+          {selectedLecture ? (
+            <>
+              {/* Left Pane - 자막 */}
+              <CaptionPanel
+                isRecording={isActiveRecording}
+                isCompleted={isCompleted}
+                captions={deepgram.captions}
+                savedCaptions={savedCaptions}
+                translationEnabled={translationEnabled}
+                translationTargetLang={translationTargetLang}
+                onTranslationToggle={handleTranslationToggle}
+                onTranslationTargetChange={setTranslationTargetLang}
+                onTranslationComplete={isCompleted ? undefined : handleTranslationComplete}
+                onBulkTranslationComplete={handleBulkTranslationComplete}
+                realTimeTranslations={realTimeTranslations}
+              />
 
-          {/* Right Pane - 채팅 */}
-          <ChatPanel />
+              {/* Right Pane - 채팅 */}
+              <ChatPanel lectureId={selectedLecture?.id || null} />
+            </>
+          ) : (
+            /* Welcome Screen - No lecture selected */
+            <div className="flex-1 flex items-center justify-center bg-white dark:bg-gray-900">
+              <div className="text-center space-y-4">
+                <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-200">
+                  {t('console.welcome.title')}
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-400">
+                  {t('console.welcome.select')}
+                </p>
+                <p className="text-lg text-gray-600 dark:text-gray-400">
+                  {t('console.welcome.create')}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Translation Activation Modal */}
+      {showTranslationModal && selectedLecture && (
+        <TranslationActivationModal
+          recordingLanguage={selectedLecture.audio_languages?.[0] || 'ko'}
+          onConfirm={handleConfirmTranslation}
+          onClose={() => setShowTranslationModal(false)}
+        />
+      )}
+
+      {/* Saving Process Popup - 녹음 종료 시 */}
+      {isSavingAudio && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]" style={{ pointerEvents: 'none' }}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md mx-4 shadow-2xl">
+            <div className="flex flex-col items-center gap-6">
+              <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="text-center space-y-3">
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {t('console.saving.title')}
+                </p>
+                <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  {t('console.saving.warning')}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('console.saving.detail')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
