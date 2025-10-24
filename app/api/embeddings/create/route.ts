@@ -12,15 +12,21 @@ const supabase = createClient(
 )
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  console.log('[API/EMBEDDINGS/CREATE] 🚀 요청 시작')
+
   try {
     const { lectureId, captionIds } = await request.json()
 
     if (!lectureId) {
+      console.log('[API/EMBEDDINGS/CREATE] ❌ lectureId 누락')
       return NextResponse.json(
         { error: 'lectureId is required' },
         { status: 400 }
       )
     }
+
+    console.log(`[API/EMBEDDINGS/CREATE] 📝 lectureId: ${lectureId}`)
 
     // caption_ids가 제공되면 해당 자막들만, 아니면 아직 임베딩되지 않은 자막들을 가져옴
     let query = supabase
@@ -45,11 +51,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!captions || captions.length === 0) {
+      console.log('[API/EMBEDDINGS/CREATE] ℹ️ 임베딩할 자막 없음')
       return NextResponse.json({
         message: 'No captions to embed',
         count: 0
       })
     }
+
+    console.log(`[API/EMBEDDINGS/CREATE] 📊 전체 자막: ${captions.length}개`)
 
     // 이미 임베딩된 caption_id 필터링
     const { data: existingEmbeddings } = await supabase
@@ -66,7 +75,10 @@ export async function POST(request: NextRequest) {
       c => !existingCaptionIds.has(c.id)
     )
 
+    console.log(`[API/EMBEDDINGS/CREATE] 🔍 이미 임베딩됨: ${existingCaptionIds.size}개, 새로 생성할 것: ${captionsToEmbed.length}개`)
+
     if (captionsToEmbed.length === 0) {
+      console.log('[API/EMBEDDINGS/CREATE] ✅ 모든 자막이 이미 임베딩됨')
       return NextResponse.json({
         message: 'All captions already embedded',
         count: 0
@@ -74,7 +86,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 임베딩 생성
+    console.log(`[API/EMBEDDINGS/CREATE] 🔄 OpenAI 임베딩 생성 시작...`)
     const embeddingsToInsert = []
+    const embeddingStartTime = Date.now()
 
     for (const caption of captionsToEmbed) {
       try {
@@ -92,24 +106,36 @@ export async function POST(request: NextRequest) {
           embedding: embedding,
         })
       } catch (error) {
-        console.error(`Failed to create embedding for caption ${caption.id}:`, error)
+        console.error(`[API/EMBEDDINGS/CREATE] ❌ 임베딩 생성 실패 (caption ${caption.id}):`, error)
       }
     }
 
+    const embeddingDuration = Date.now() - embeddingStartTime
+    console.log(`[API/EMBEDDINGS/CREATE] ✅ OpenAI 임베딩 생성 완료: ${embeddingsToInsert.length}개 (${embeddingDuration}ms)`)
+
     // DB에 저장
     if (embeddingsToInsert.length > 0) {
+      console.log(`[API/EMBEDDINGS/CREATE] 💾 DB 저장 시작...`)
+      const dbStartTime = Date.now()
+
       const { error: insertError } = await supabase
         .from('embeddings')
         .insert(embeddingsToInsert)
 
       if (insertError) {
-        console.error('Embeddings insert error:', insertError)
+        console.error('[API/EMBEDDINGS/CREATE] ❌ DB 저장 실패:', insertError)
         return NextResponse.json(
           { error: 'Failed to save embeddings' },
           { status: 500 }
         )
       }
+
+      const dbDuration = Date.now() - dbStartTime
+      console.log(`[API/EMBEDDINGS/CREATE] ✅ DB 저장 완료 (${dbDuration}ms)`)
     }
+
+    const totalDuration = Date.now() - startTime
+    console.log(`[API/EMBEDDINGS/CREATE] 🎉 전체 완료: ${embeddingsToInsert.length}개 임베딩 (총 ${totalDuration}ms)`)
 
     return NextResponse.json({
       message: 'Embeddings created successfully',

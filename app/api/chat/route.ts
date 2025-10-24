@@ -88,10 +88,14 @@ Reglas importantes:
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  console.log('[API/CHAT] 💬 채팅 요청 시작')
+
   try {
     const { messages, lectureId, userLanguage } = await request.json()
 
     if (!messages || !Array.isArray(messages)) {
+      console.log('[API/CHAT] ❌ 메시지 배열 누락')
       return NextResponse.json(
         { error: 'Messages array is required' },
         { status: 400 }
@@ -102,10 +106,14 @@ export async function POST(request: NextRequest) {
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop()
     const detectedLang = lastUserMessage ? detectLanguage(lastUserMessage.content) : userLanguage || 'ko'
 
+    console.log(`[API/CHAT] 📝 사용자 질문: "${lastUserMessage?.content.substring(0, 50)}${lastUserMessage?.content.length > 50 ? '...' : ''}"`)
+    console.log(`[API/CHAT] 🌐 감지된 언어: ${detectedLang}`)
+
     let contextMessages = [...messages]
 
     // lectureId가 있으면 RAG 검색 수행
     if (lectureId && lastUserMessage) {
+      console.log(`[API/CHAT] 🔍 RAG 모드: lectureId = ${lectureId}`)
       try {
         const searchResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/embeddings/search`, {
           method: 'POST',
@@ -123,6 +131,8 @@ export async function POST(request: NextRequest) {
           const results = searchData.results || []
 
           if (results.length > 0) {
+            console.log(`[API/CHAT] ✅ RAG 검색 완료: ${results.length}개 컨텍스트 발견`)
+
             // 컨텍스트 구성
             const context = results
               .map((r: any) => r.content)
@@ -142,6 +152,7 @@ ${context}
               ...messages
             ]
           } else {
+            console.log('[API/CHAT] ℹ️ RAG 검색 결과 없음, 기본 모드로 진행')
             // 컨텍스트가 없으면 기본 시스템 프롬프트만 사용
             contextMessages = [
               {
@@ -153,7 +164,7 @@ ${context}
           }
         }
       } catch (error) {
-        console.error('RAG search error:', error)
+        console.error('[API/CHAT] ❌ RAG 검색 실패:', error)
         // RAG 실패 시 기본 모드로 동작
         contextMessages = [
           {
@@ -164,6 +175,7 @@ ${context}
         ]
       }
     } else {
+      console.log('[API/CHAT] ℹ️ 기본 모드 (lectureId 없음)')
       // lectureId가 없으면 기본 시스템 프롬프트만 사용
       contextMessages = [
         {
@@ -175,6 +187,9 @@ ${context}
     }
 
     // OpenAI API 호출
+    console.log('[API/CHAT] 🤖 GPT-4o-mini 호출 중...')
+    const gptStartTime = Date.now()
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: contextMessages as any,
@@ -183,6 +198,12 @@ ${context}
     })
 
     const aiMessage = completion.choices[0]?.message?.content || '답변을 생성하지 못했습니다.'
+    const gptDuration = Date.now() - gptStartTime
+    const totalDuration = Date.now() - startTime
+
+    console.log(`[API/CHAT] ✅ GPT-4o-mini 응답 완료 (${gptDuration}ms)`)
+    console.log(`[API/CHAT] 📊 토큰 사용량 - Input: ${completion.usage?.prompt_tokens}, Output: ${completion.usage?.completion_tokens}, Total: ${completion.usage?.total_tokens}`)
+    console.log(`[API/CHAT] 🎉 전체 처리 완료 (${totalDuration}ms)`)
 
     return NextResponse.json({
       message: aiMessage,
