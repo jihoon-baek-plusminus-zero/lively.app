@@ -33,13 +33,14 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
       // 1. 사용자 메시지 저장
       await saveMessage('user', userMessage)
 
-      // 2. OpenAI API 호출
+      // 2. OpenAI API 호출 (RAG 포함)
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          lectureId,
           messages: [
             ...messages.map(msg => ({
               role: msg.role,

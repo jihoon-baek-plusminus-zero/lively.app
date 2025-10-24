@@ -53,6 +53,17 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 5. 임베딩 테이블 (RAG용 벡터 저장)
+-- pgvector 확장이 먼저 설치되어 있어야 합니다: CREATE EXTENSION IF NOT EXISTS vector;
+CREATE TABLE IF NOT EXISTS embeddings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lecture_id UUID NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
+  caption_id UUID REFERENCES captions(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  embedding vector(1536) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ================================================================
 -- 인덱스 생성 (성능 최적화)
 -- ================================================================
@@ -72,6 +83,10 @@ CREATE INDEX IF NOT EXISTS idx_documents_lecture_id ON documents(lecture_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_lecture_id ON chat_messages(lecture_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
 
+-- 임베딩 조회 최적화
+CREATE INDEX IF NOT EXISTS idx_embeddings_lecture_id ON embeddings(lecture_id);
+CREATE INDEX IF NOT EXISTS idx_embeddings_vector ON embeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+
 -- ================================================================
 -- Row Level Security (RLS) 정책
 -- ================================================================
@@ -81,6 +96,7 @@ ALTER TABLE lectures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE captions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE embeddings ENABLE ROW LEVEL SECURITY;
 
 -- 강의 정책: 본인의 강의만 접근 가능
 CREATE POLICY "Users can view their own lectures"
@@ -141,6 +157,61 @@ CREATE POLICY "Users can view their own chat messages"
 CREATE POLICY "Users can insert their own chat messages"
   ON chat_messages FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+-- 임베딩 정책: 강의 소유자만 접근 가능
+CREATE POLICY "Users can view embeddings of their lectures"
+  ON embeddings FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM lectures
+      WHERE lectures.id = embeddings.lecture_id
+      AND lectures.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can insert embeddings to their lectures"
+  ON embeddings FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM lectures
+      WHERE lectures.id = embeddings.lecture_id
+      AND lectures.user_id = auth.uid()
+    )
+  );
+
+-- ================================================================
+-- 벡터 유사도 검색 함수
+-- ================================================================
+
+-- 유사도 검색 함수 (RAG에서 사용)
+CREATE OR REPLACE FUNCTION match_embeddings(
+  query_embedding vector(1536),
+  match_lecture_id UUID,
+  match_threshold float DEFAULT 0.5,
+  match_count int DEFAULT 5
+)
+RETURNS TABLE (
+  id UUID,
+  content TEXT,
+  similarity float,
+  created_at TIMESTAMPTZ
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    embeddings.id,
+    embeddings.content,
+    1 - (embeddings.embedding <=> query_embedding) AS similarity,
+    embeddings.created_at
+  FROM embeddings
+  WHERE embeddings.lecture_id = match_lecture_id
+    AND 1 - (embeddings.embedding <=> query_embedding) > match_threshold
+  ORDER BY embeddings.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$;
 
 -- ================================================================
 -- 완료!

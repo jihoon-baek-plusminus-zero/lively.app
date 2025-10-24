@@ -14,6 +14,7 @@ import { useDeepgram } from '@/hooks/useDeepgram'
 import { useLectures, type Lecture } from '@/hooks/useLectures'
 import { useCaptions } from '@/hooks/useCaptions'
 import { useCaptionsList } from '@/hooks/useCaptionsList'
+import { useEmbeddingGenerator } from '@/hooks/useEmbeddingGenerator'
 import { uploadAudioFile, downloadAudioFile, downloadTranscript } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
 
@@ -44,6 +45,14 @@ export default function ConsolePage() {
   const { lectures, startLecture, endLecture, updateAudioUrl, updateLectureTitle, updateTranslateTo, deleteLecture, refetch: refetchLectures } = useLectures()
   const { saveCaption, updateCaptionTranslation } = useCaptions()
   const { captions: savedCaptions } = useCaptionsList(selectedLecture?.id || null)
+
+  // 실시간 임베딩 생성 (1분 또는 5문장 기준)
+  const activeRecording = audioRecorder.isRecording && (isPaused || deepgram.isConnected)
+  useEmbeddingGenerator({
+    lectureId: selectedLecture?.id || null,
+    isRecording: activeRecording,
+    savedCaptionsCount: savedCaptions.length,
+  })
 
   // 녹음 중: 오디오 녹음 중이고 (일시정지 아니거나 Deepgram 연결됨)
   const isRecording = audioRecorder.isRecording && (isPaused || deepgram.isConnected)

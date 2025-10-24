@@ -992,6 +992,20 @@ export const translations = {
     zh: 'AI正在生成回答...',
     es: 'La IA está generando una respuesta...',
   },
+  'chat.service.name': {
+    ko: 'Livey의 실시간 속기록 기반 채팅 서비스',
+    en: 'Livey\'s real-time transcript-based chat service',
+    ja: 'Liveyのリアルタイム文字起こしベースのチャットサービス',
+    zh: 'Livey的实时转录聊天服务',
+    es: 'Servicio de chat basado en transcripciones en tiempo real de Livey',
+  },
+  'chat.offtopic.response': {
+    ko: '저는 주제와 관련된 질문에만 답변할 수 있어요',
+    en: 'I can only answer questions related to the topic',
+    ja: 'トピックに関連する質問にのみ回答できます',
+    zh: '我只能回答与主题相关的问题',
+    es: 'Solo puedo responder preguntas relacionadas con el tema',
+  },
 
   // Theme Toggle
   'theme.light': {
