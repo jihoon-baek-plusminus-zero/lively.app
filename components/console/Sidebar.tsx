@@ -8,6 +8,7 @@ import { useLectures, type Lecture } from '@/hooks/useLectures'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LanguageSelector } from '@/components/LanguageSelector'
 import { useLanguage } from '@/contexts/LanguageContext'
+import LanguageSettingsModal from './LanguageSettingsModal'
 
 interface SidebarProps {
   selectedLectureId: string | null
@@ -28,6 +29,7 @@ export default function Sidebar({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [showLanguageModal, setShowLanguageModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const handleLogout = async () => {
@@ -35,15 +37,17 @@ export default function Sidebar({
     window.location.href = '/'
   }
 
-  const handleCreateLecture = async () => {
+  const handleCreateLecture = async (audioLanguages: string[], translateTo?: string) => {
     setCreating(true)
+    setShowLanguageModal(false)
+
     const now = new Date()
     const title = `강의 ${now.toLocaleDateString('ko-KR')} ${now.toLocaleTimeString('ko-KR', {
       hour: '2-digit',
       minute: '2-digit',
     })}`
 
-    const newLecture = await createLecture(title)
+    const newLecture = await createLecture(title, audioLanguages, translateTo)
     setCreating(false)
 
     if (newLecture) {
@@ -116,7 +120,7 @@ export default function Sidebar({
         </div>
 
         <button
-          onClick={handleCreateLecture}
+          onClick={() => setShowLanguageModal(true)}
           disabled={creating}
           className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -294,6 +298,14 @@ export default function Sidebar({
           </button>
         </div>
       </div>
+
+      {/* Language Settings Modal */}
+      {showLanguageModal && (
+        <LanguageSettingsModal
+          onConfirm={handleCreateLecture}
+          onClose={() => setShowLanguageModal(false)}
+        />
+      )}
     </aside>
   )
 }

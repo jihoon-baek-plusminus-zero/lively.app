@@ -12,6 +12,8 @@ export interface Lecture {
   started_at: string | null
   ended_at: string | null
   duration_seconds: number
+  audio_languages?: string[] // STT 인식 언어들
+  translate_to?: string // 번역 타겟 언어 (optional)
   created_at: string
   updated_at: string
 }
@@ -54,7 +56,7 @@ export function useLectures() {
 
   // 새 강의 생성
   const createLecture = useCallback(
-    async (title: string) => {
+    async (title: string, audioLanguages?: string[], translateTo?: string) => {
       if (!user) return null
 
       try {
@@ -64,6 +66,8 @@ export function useLectures() {
             user_id: user.id,
             title,
             status: 'draft',
+            audio_languages: audioLanguages,
+            translate_to: translateTo,
           })
           .select()
           .single()

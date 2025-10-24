@@ -147,8 +147,9 @@ export default function ConsolePage() {
 
       console.log('📡 Deepgram 연결 시작...')
 
-      // 2. Deepgram 연결
-      await deepgram.connect(stream)
+      // 2. Deepgram 연결 (강의의 언어 설정 사용, 없으면 기본값)
+      const audioLanguages = selectedLecture.audio_languages || ['ko']
+      await deepgram.connect(stream, audioLanguages)
 
       console.log('✅ Deepgram 연결 완료')
 
@@ -172,8 +173,9 @@ export default function ConsolePage() {
     if (isPaused) {
       // 재개: Deepgram 재연결 + MediaRecorder 재개
       console.log('▶️ 녹음 재개 - Deepgram 재연결 + MediaRecorder 재개')
-      if (audioRecorder.audioStream) {
-        await deepgram.connect(audioRecorder.audioStream)
+      if (audioRecorder.audioStream && selectedLecture) {
+        const audioLanguages = selectedLecture.audio_languages || ['ko']
+        await deepgram.connect(audioRecorder.audioStream, audioLanguages)
         audioRecorder.resumeRecording()
         console.log('✅ Deepgram 재연결 및 MediaRecorder 재개 완료')
       }

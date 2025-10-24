@@ -13,7 +13,7 @@ export interface UseDeepgramReturn {
   captions: Caption[]
   isConnected: boolean
   error: string | null
-  connect: (stream: MediaStream) => Promise<void>
+  connect: (stream: MediaStream, languages?: string[]) => Promise<void>
   disconnect: () => void
 }
 
@@ -26,7 +26,7 @@ export function useDeepgram(): UseDeepgramReturn {
   const connectionRef = useRef<any>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 
-  const connect = useCallback(async (stream: MediaStream) => {
+  const connect = useCallback(async (stream: MediaStream, languages: string[] = ['ko']) => {
     try {
       setError(null)
 
@@ -45,15 +45,22 @@ export function useDeepgram(): UseDeepgramReturn {
       console.log('📡 Deepgram 클라이언트 생성 완료')
 
       // Live Transcription 연결
-      const connection = deepgram.listen.live({
+      const languageCode = languages[0] || 'ko'
+
+      // Deepgram 설정 객체
+      const liveOptions: any = {
         model: 'nova-2',
-        language: 'ko', // 한국어
+        language: languageCode, // 'multi' 또는 'ko', 'en', 'ja', 'zh', 'es'
         smart_format: true,
         punctuate: true,
         interim_results: true, // 중간 결과 포함
         utterance_end_ms: 1000,
         vad_events: true,
-      })
+      }
+
+      const connection = deepgram.listen.live(liveOptions)
+
+      console.log(`🌍 언어 설정: ${languageCode === 'multi' ? '다국어 자동감지' : languageCode}`)
 
       connectionRef.current = connection
 
