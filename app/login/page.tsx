@@ -118,10 +118,20 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Forgot Password Link */}
+            <div className="text-right">
+              <Link
+                href="/reset-password"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {t('auth.forgot.password')}
+              </Link>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-primary text-white rounded-lg font-semibold shadow-lg hover:bg-primary-600 hover:shadow-xl hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
+              className="w-full py-3 px-4 bg-primary dark:bg-[#3B82F6] text-white rounded-lg font-semibold shadow-lg hover:bg-primary-600 dark:hover:bg-blue-500 hover:shadow-xl hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
             >
               {loading ? (
                 <>

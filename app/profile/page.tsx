@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Globe, Moon, Sun } from 'lucide-react'
+import { ArrowLeft, User, Globe, Moon, Sun, Key, Trash2, AlertTriangle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useTheme } from 'next-themes'
+import { createClient } from '@/lib/supabase'
 import type { Language } from '@/lib/translations'
 
 export default function ProfilePage() {
@@ -14,6 +15,10 @@ export default function ProfilePage() {
   const { theme, setTheme } = useTheme()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false)
+  const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -33,6 +38,43 @@ export default function ProfilePage() {
     { code: 'zh', name: '中文', flag: '🇨🇳' },
     { code: 'es', name: 'Español', flag: '🇪🇸' },
   ]
+
+  const handleResetPassword = async () => {
+    if (!user?.email) return
+
+    setResetPasswordLoading(true)
+    try {
+      const supabase = createClient()
+      await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/update-password`,
+      })
+      setResetPasswordSuccess(true)
+      setTimeout(() => setResetPasswordSuccess(false), 5000)
+    } catch (error) {
+      console.error('Password reset error:', error)
+    } finally {
+      setResetPasswordLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.rpc('delete_user')
+
+      if (error) throw error
+
+      await supabase.auth.signOut()
+      router.push('/')
+    } catch (error) {
+      console.error('Account deletion error:', error)
+      alert('Failed to delete account. Please try again.')
+    } finally {
+      setDeleteLoading(false)
+      setShowDeleteModal(false)
+    }
+  }
 
   if (loading || !user || !mounted) {
     return (
@@ -82,6 +124,27 @@ export default function ProfilePage() {
             <div>
               <label className="text-sm text-gray-600 dark:text-gray-400">{t('profile.label.email')}</label>
               <p className="text-gray-900 dark:text-gray-100 font-medium">{user.email}</p>
+            </div>
+
+            {/* Password Reset Button */}
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={handleResetPassword}
+                disabled={resetPasswordLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-primary dark:bg-[#3B82F6] text-white rounded-lg hover:bg-primary-600 dark:hover:bg-blue-500 transition-all disabled:opacity-50"
+              >
+                {resetPasswordLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Key className="w-4 h-4" />
+                )}
+                <span>비밀번호 재설정</span>
+              </button>
+              {resetPasswordSuccess && (
+                <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                  비밀번호 재설정 링크가 이메일로 전송되었습니다.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -165,7 +228,78 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
+
+        {/* Account Deletion */}
+        <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-red-200 dark:border-red-800 p-6 mt-6">
+          <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
+            <Trash2 className="w-5 h-5" />
+            회원 탈퇴
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
+          </p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>회원 탈퇴</span>
+          </button>
+        </div>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                정말 탈퇴하시겠습니까?
+              </h3>
+            </div>
+            <div className="mb-6 space-y-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                이 작업은 <span className="font-bold text-red-600 dark:text-red-400">영구적이며 되돌릴 수 없습니다</span>.
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                계정을 삭제하면:
+              </p>
+              <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
+                <li>모든 녹음 기록이 삭제됩니다</li>
+                <li>AI 채팅 기록이 삭제됩니다</li>
+                <li>저장된 번역 데이터가 삭제됩니다</li>
+                <li>계정 정보가 영구적으로 삭제됩니다</li>
+              </ul>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleteLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>탈퇴 중...</span>
+                  </>
+                ) : (
+                  <span>회원 탈퇴</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
