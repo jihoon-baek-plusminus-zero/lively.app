@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useTheme } from 'next-themes'
 import { createClient } from '@/lib/supabase'
 import type { Language } from '@/lib/translations'
+import { useUserUsage } from '@/hooks/useUserUsage'
 
 export default function ProfilePage() {
   const { user, loading } = useAuth()
@@ -19,6 +20,14 @@ export default function ProfilePage() {
   const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const {
+    usage,
+    loading: usageLoading,
+    getRemainingRecordingTime,
+    getRecordedTime,
+    getTotalQuotaTime,
+    getRemainingAICredit
+  } = useUserUsage()
 
   useEffect(() => {
     setMounted(true)
@@ -38,6 +47,11 @@ export default function ProfilePage() {
     { code: 'zh', name: '中文', flag: '🇨🇳' },
     { code: 'es', name: 'Español', flag: '🇪🇸' },
   ]
+
+  // Format time as HH:MM:SS
+  const formatTimeHHMMSS = (hours: number, minutes: number, seconds: number) => {
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
 
   const handleResetPassword = async () => {
     if (!user?.email) return
@@ -147,6 +161,87 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Usage Information */}
+        <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+            내 사용량
+          </h2>
+
+          {usageLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
+            </div>
+          ) : usage ? (
+            <div className="space-y-6">
+              {/* Recording Quota Section */}
+              <div>
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  녹음 한도:
+                </h3>
+                <div className="space-y-2 pl-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">내 녹음 한도:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {getTotalQuotaTime().hours}시간
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">이번달 녹음 시간:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {formatTimeHHMMSS(
+                        getRecordedTime().hours,
+                        getRecordedTime().minutes,
+                        getRecordedTime().seconds
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">이번달 잔여 시간:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {formatTimeHHMMSS(
+                        getRemainingRecordingTime().hours,
+                        getRemainingRecordingTime().minutes,
+                        getRemainingRecordingTime().seconds
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Credit Section */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  AI 질문 크레딧:
+                </h3>
+                <div className="space-y-2 pl-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">내 AI 질문 credit:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {usage.total_ai_credit}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">이번달 사용한 크레딧:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {usage.total_ai_used}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">이번달 잔여 크레딧:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {getRemainingAICredit()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+              사용량 정보를 불러올 수 없습니다.
+            </p>
+          )}
         </div>
 
         {/* Language Settings */}

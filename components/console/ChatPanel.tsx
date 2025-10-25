@@ -5,6 +5,7 @@ import { MessageSquare, Send, Loader2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useChatMessages } from '@/hooks/useChatMessages'
 import ReactMarkdown from 'react-markdown'
+import { useUserUsage } from '@/hooks/useUserUsage'
 
 interface ChatPanelProps {
   lectureId: string | null
@@ -16,6 +17,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
   const [inputText, setInputText] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { getRemainingAICredit } = useUserUsage()
 
   // 새 메시지가 추가되면 스크롤을 아래로
   useEffect(() => {
@@ -221,7 +223,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
         </div>
 
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-          {t('chat.footer.note')}
+          이번 달 남은 AI 질문 갯수: {getRemainingAICredit()}개
         </p>
       </div>
     </div>

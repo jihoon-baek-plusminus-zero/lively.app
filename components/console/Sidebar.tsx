@@ -10,6 +10,7 @@ import { LanguageSelector } from '@/components/LanguageSelector'
 import { useLanguage } from '@/contexts/LanguageContext'
 import Image from 'next/image'
 import LanguageSettingsModal from './LanguageSettingsModal'
+import { useUserUsage } from '@/hooks/useUserUsage'
 
 interface SidebarProps {
   selectedLectureId: string | null
@@ -36,6 +37,7 @@ export default function Sidebar({
   const [editingTitle, setEditingTitle] = useState('')
   const [showLanguageModal, setShowLanguageModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const { getRemainingRecordingTime } = useUserUsage()
 
   const handleLogout = async () => {
     await signOut()
@@ -73,6 +75,15 @@ export default function Sidebar({
       return `${hours}${t('sidebar.duration.hours')} ${minutes}${t('sidebar.duration.minutes')}`
     }
     return `${minutes}${t('sidebar.duration.minutes')}`
+  }
+
+  const getRemainingTimeDisplay = () => {
+    const { hours, minutes } = getRemainingRecordingTime()
+    if (hours >= 1) {
+      return `${hours}시간 남음`
+    } else {
+      return `${minutes}분 남음`
+    }
   }
 
   // 메뉴 외부 클릭 감지
@@ -170,6 +181,11 @@ export default function Sidebar({
             </>
           )}
         </button>
+
+        {/* Remaining Recording Time */}
+        <div className="mt-3 text-center text-sm text-gray-600 dark:text-gray-400">
+          {getRemainingTimeDisplay()}
+        </div>
       </div>
 
       {/* Lectures List */}
