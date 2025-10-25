@@ -587,6 +587,27 @@ export const translations = {
   },
 
   // Console Buttons
+  'console.microphone.label': {
+    ko: '마이크',
+    en: 'Microphone',
+    ja: 'マイク',
+    zh: '麦克风',
+    es: 'Micrófono',
+  },
+  'console.microphone.default': {
+    ko: '기본 마이크',
+    en: 'Default Microphone',
+    ja: 'デフォルトのマイク',
+    zh: '默认麦克风',
+    es: 'Micrófono predeterminado',
+  },
+  'console.microphone.select': {
+    ko: '마이크 선택',
+    en: 'Select Microphone',
+    ja: 'マイクを選択',
+    zh: '选择麦克风',
+    es: 'Seleccionar micrófono',
+  },
   'console.button.start.recording': {
     ko: '녹음 시작',
     en: 'Start Recording',

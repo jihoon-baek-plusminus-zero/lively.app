@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react'
 
 export interface UseAudioRecorderReturn {
   isRecording: boolean
-  startRecording: () => Promise<MediaStream | null>
+  startRecording: (deviceId?: string) => Promise<MediaStream | null>
   stopRecording: () => Promise<Blob | null>
   pauseRecording: () => void
   resumeRecording: () => void
@@ -17,22 +17,29 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
 
-  const startRecording = useCallback(async (): Promise<MediaStream | null> => {
+  const startRecording = useCallback(async (deviceId?: string): Promise<MediaStream | null> => {
     try {
       setError(null)
       audioChunksRef.current = [] // 녹음 청크 초기화
 
-      console.log('🎤 마이크 권한 요청...')
+      console.log('🎤 마이크 권한 요청...', deviceId ? `Device: ${deviceId}` : 'Default device')
 
       // 마이크 권한 요청
+      const audioConstraints: MediaTrackConstraints = {
+        channelCount: 1, // 모노
+        sampleRate: 16000, // Deepgram 권장
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      }
+
+      // deviceId가 지정된 경우 해당 디바이스 사용
+      if (deviceId) {
+        audioConstraints.deviceId = { exact: deviceId }
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1, // 모노
-          sampleRate: 16000, // Deepgram 권장
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
+        audio: audioConstraints,
       })
 
       audioStreamRef.current = stream

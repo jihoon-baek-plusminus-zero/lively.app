@@ -38,6 +38,8 @@ export default function ConsolePage() {
   const [captionIdMapping, setCaptionIdMapping] = useState<Record<string, string>>({}) // 임시ID -> DB ID 매핑
   const [isSavingTranslations, setIsSavingTranslations] = useState(false) // 번역 저장 중 상태
   const [processedCaptionIds, setProcessedCaptionIds] = useState<Set<string>>(new Set()) // 이미 처리된 자막 ID
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([])
+  const [selectedMicId, setSelectedMicId] = useState<string>('')
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Hooks
@@ -89,6 +91,31 @@ export default function ConsolePage() {
       }
     }
   }, [lectures, selectedLecture])
+
+  // 오디오 디바이스 목록 로드
+  useEffect(() => {
+    const loadAudioDevices = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        const audioInputs = devices.filter(device => device.kind === 'audioinput')
+        setAudioDevices(audioInputs)
+        console.log('🎤 사용 가능한 마이크:', audioInputs.length, '개')
+        audioInputs.forEach((device, idx) => {
+          console.log(`  ${idx + 1}. ${device.label || `마이크 ${idx + 1}`} (${device.deviceId})`)
+        })
+      } catch (error) {
+        console.error('오디오 디바이스 목록 로드 실패:', error)
+      }
+    }
+
+    loadAudioDevices()
+
+    // 디바이스 변경 감지 (플러그/언플러그)
+    navigator.mediaDevices.addEventListener('devicechange', loadAudioDevices)
+    return () => {
+      navigator.mediaDevices.removeEventListener('devicechange', loadAudioDevices)
+    }
+  }, [])
 
   // 메뉴 외부 클릭 감지
   useEffect(() => {
@@ -233,6 +260,38 @@ export default function ConsolePage() {
   }, [deepgram.captions, selectedLecture, saveCaption, recordingStartTime, translationEnabled, translationTargetLang])
 
   // 녹음 시작
+  // 녹음 중 마이크 변경 핸들러
+  const handleMicrophoneChange = async (newMicId: string) => {
+    setSelectedMicId(newMicId)
+
+    // 녹음 중이면 스트림을 재시작
+    if (isRecording && selectedLecture) {
+      console.log('🔄 마이크 변경 중... 새 디바이스:', newMicId || 'default')
+
+      try {
+        // 1. 현재 녹음 중지 (오디오만, Deepgram은 유지)
+        await audioRecorder.stopRecording()
+
+        // 2. 새 마이크로 녹음 재시작
+        const newStream = await audioRecorder.startRecording(newMicId || undefined)
+
+        if (!newStream) {
+          throw new Error('새 마이크 스트림을 가져올 수 없습니다')
+        }
+
+        // 3. Deepgram 연결 재시작
+        const audioLanguages = selectedLecture.audio_languages || ['ko']
+        await deepgram.disconnect()
+        await deepgram.connect(newStream, audioLanguages)
+
+        console.log('✅ 마이크 변경 완료')
+      } catch (error) {
+        console.error('❌ 마이크 변경 실패:', error)
+        alert('마이크 변경에 실패했습니다. 녹음을 중지하고 다시 시작해주세요.')
+      }
+    }
+  }
+
   const handleStartRecording = async () => {
     if (!selectedLecture) {
       alert(t('console.alert.select.lecture'))
@@ -247,8 +306,8 @@ export default function ConsolePage() {
     setProcessedCaptionIds(new Set())
 
     try {
-      // 1. 오디오 녹음 시작 (스트림 직접 반환)
-      const stream = await audioRecorder.startRecording()
+      // 1. 오디오 녹음 시작 (선택된 마이크로 스트림 직접 반환)
+      const stream = await audioRecorder.startRecording(selectedMicId || undefined)
 
       if (!stream) {
         throw new Error('오디오 스트림을 가져올 수 없습니다')
@@ -608,6 +667,25 @@ export default function ConsolePage() {
 
             {/* Recording Controls */}
             <div className="flex items-center gap-3">
+              {/* Microphone Selection Dropdown - 항상 표시 */}
+              {!isCompleted && !isSavingAudio && (
+                <select
+                  value={selectedMicId}
+                  onChange={(e) => handleMicrophoneChange(e.target.value)}
+                  disabled={!selectedLecture}
+                  className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:border-gray-400 dark:hover:border-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {t('console.microphone.default')}
+                  </option>
+                  {audioDevices.map((device) => (
+                    <option key={device.deviceId} value={device.deviceId}>
+                      {device.label || `${t('console.microphone.label')} ${device.deviceId.substring(0, 8)}`}
+                    </option>
+                  ))}
+                </select>
+              )}
+
               {!isRecording && !isCompleted && !isSavingAudio && (
                 <button
                   onClick={handleStartRecording}
