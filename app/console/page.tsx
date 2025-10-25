@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Sidebar from '@/components/console/Sidebar'
 import CaptionPanel from '@/components/console/CaptionPanel'
 import ChatPanel from '@/components/console/ChatPanel'
@@ -659,8 +660,14 @@ export default function ConsolePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary dark:bg-[#3B82F6] rounded-lg flex items-center justify-center">
-                  <Mic className="w-5 h-5 text-white" />
+                <div className="w-8 h-8">
+                  <Image
+                    src="/icon.png"
+                    alt="Livey Icon"
+                    width={32}
+                    height={32}
+                    className="w-full h-full"
+                  />
                 </div>
 
                 {/* 제목 (편집 모드 / 일반 모드) */}
