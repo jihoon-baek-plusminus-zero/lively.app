@@ -8,6 +8,7 @@ import { useLectures, type Lecture } from '@/hooks/useLectures'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LanguageSelector } from '@/components/LanguageSelector'
 import { useLanguage } from '@/contexts/LanguageContext'
+import Image from 'next/image'
 import LanguageSettingsModal from './LanguageSettingsModal'
 
 interface SidebarProps {
@@ -115,13 +116,14 @@ export default function Sidebar({
     <aside className="w-80 bg-white dark:bg-[#202020] border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Sidebar Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-10 h-10 bg-primary dark:bg-[#3B82F6] rounded-lg flex items-center justify-center">
-            <Mic className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold text-primary">
-            {t('app.name')}
-          </span>
+        <div className="flex items-center mb-6">
+          <Image
+            src="/logo.png"
+            alt="Livey Logo"
+            width={200}
+            height={50}
+            className="h-10 w-auto"
+          />
         </div>
 
         <button

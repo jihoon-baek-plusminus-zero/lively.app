@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, Mic, MessageSquare, Languages, Sparkles } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -39,14 +40,13 @@ export default function Home() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary dark:bg-[#3B82F6] rounded-lg flex items-center justify-center">
-              <Mic className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-primary">
-              {t('app.name')}
-            </span>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Livey Logo"
+            width={150}
+            height={40}
+            className="h-8 w-auto"
+          />
           <div className="flex items-center gap-4">
             <LanguageSelector />
             <Link
@@ -133,12 +133,13 @@ export default function Home() {
       <footer className="bg-gray-900 dark:bg-black text-white py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-primary dark:bg-[#3B82F6] rounded-lg flex items-center justify-center">
-                <Mic className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-xl font-bold">{t('app.name')}</span>
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Livey Logo"
+              width={120}
+              height={30}
+              className="h-6 w-auto"
+            />
             <p className="text-gray-400 dark:text-gray-500 text-sm">
               {t('footer.copyright')}
             </p>
