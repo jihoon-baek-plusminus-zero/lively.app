@@ -143,14 +143,8 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Recent Lectures */}
+      {/* Lectures List */}
       <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-gray-900">
-        <div className="flex items-center gap-2 px-2 mb-3">
-          <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-            {t('sidebar.recent.lectures')}
-          </h2>
-        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
