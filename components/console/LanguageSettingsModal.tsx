@@ -38,11 +38,11 @@ export default function LanguageSettingsModal({ onConfirm, onClose }: LanguageSe
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg">
+      <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl w-full max-w-lg">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary dark:bg-[#3B82F6] rounded-lg flex items-center justify-center">
               <Globe className="w-5 h-5 text-white" />
             </div>
             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
@@ -154,7 +154,7 @@ export default function LanguageSettingsModal({ onConfirm, onClose }: LanguageSe
           </button>
           <button
             onClick={handleConfirm}
-            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+            className="flex-1 px-4 py-2.5 bg-primary dark:bg-[#3B82F6] hover:bg-primary-600 dark:hover:bg-blue-500 text-white rounded-lg hover:shadow-lg transition-all font-medium"
           >
             {t('language.settings.start')}
           </button>

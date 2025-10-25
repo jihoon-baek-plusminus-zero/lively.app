@@ -62,7 +62,7 @@ export default function MultiWarningPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#202020] flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700">
         {/* Icon */}
         <div className="flex justify-center mb-6">
@@ -86,7 +86,7 @@ export default function MultiWarningPage() {
           <button
             onClick={handleConnect}
             disabled={isProcessing}
-            className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-6 py-3 bg-primary dark:bg-[#3B82F6] hover:bg-primary-600 dark:hover:bg-blue-500 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isProcessing ? '처리 중...' : t('multi.warning.connect')}
           </button>

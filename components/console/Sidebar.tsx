@@ -112,14 +112,14 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+    <aside className="w-80 bg-white dark:bg-[#202020] border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Sidebar Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-6">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-primary dark:bg-[#3B82F6] rounded-lg flex items-center justify-center">
             <Mic className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="text-2xl font-bold text-primary">
             {t('app.name')}
           </span>
         </div>
@@ -127,7 +127,7 @@ export default function Sidebar({
         <button
           onClick={() => setShowLanguageModal(true)}
           disabled={creating}
-          className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {creating ? (
             <>
@@ -144,7 +144,7 @@ export default function Sidebar({
       </div>
 
       {/* Lectures List */}
-      <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-gray-900">
+      <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-[#202020]">
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
@@ -267,9 +267,9 @@ export default function Sidebar({
       <ThemeToggle />
 
       {/* User Profile */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#202020]">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+          <div className="w-10 h-10 bg-primary dark:bg-[#3B82F6] rounded-full flex items-center justify-center text-white font-semibold">
             {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
           </div>
           <div className="flex-1 min-w-0">

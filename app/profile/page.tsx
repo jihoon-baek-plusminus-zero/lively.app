@@ -38,7 +38,7 @@ export default function ProfilePage() {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <div className="w-16 h-16 bg-primary dark:bg-[#3B82F6] rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
             <User className="w-8 h-8 text-white" />
           </div>
           <p className="text-gray-600 dark:text-gray-400">{t('profile.loading')}</p>
@@ -50,7 +50,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+      <header className="bg-white dark:bg-[#202020] border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => router.push('/console')}
@@ -67,7 +67,7 @@ export default function ProfilePage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Profile Info */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
             <User className="w-5 h-5" />
             {t('profile.section.user.info')}
@@ -87,7 +87,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Language Settings */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
             <Globe className="w-5 h-5" />
             {t('profile.section.language')}
@@ -120,7 +120,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Theme Settings */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
             {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
             {t('profile.section.theme')}

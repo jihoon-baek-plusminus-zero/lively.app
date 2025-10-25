@@ -60,7 +60,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#202020] flex items-center justify-center px-4">
       {/* Back button */}
       <Link
         href="/"
@@ -70,10 +70,10 @@ export default function SignupPage() {
       </Link>
 
       <div className="max-w-md w-full">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8">
+        <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-primary dark:bg-[#3B82F6] rounded-xl flex items-center justify-center mx-auto mb-4">
               <Mic className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
@@ -164,7 +164,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading || success}
-              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
+              className="w-full py-3 px-4 bg-primary text-white rounded-lg font-semibold shadow-lg hover:bg-primary-600 hover:shadow-xl hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
             >
               {loading ? (
                 <>

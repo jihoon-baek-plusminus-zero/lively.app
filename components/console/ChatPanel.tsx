@@ -74,7 +74,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
 
   if (!lectureId) {
     return (
-      <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+      <div className="flex-1 flex flex-col bg-white dark:bg-[#202020]">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -96,7 +96,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+    <div className="flex-1 flex flex-col bg-white dark:bg-[#202020]">
       {/* Panel Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <div className="flex items-center justify-between">
@@ -142,7 +142,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
                 <div
                   className={`max-w-[80%] ${
                     message.role === 'user'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl rounded-tr-sm'
+                      ? 'bg-primary text-white rounded-2xl rounded-tr-sm'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm'
                   } px-4 py-3`}
                 >
@@ -210,7 +210,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
           <button
             onClick={handleSend}
             disabled={!inputText.trim() || isGenerating}
-            className="p-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2.5 bg-primary text-white rounded-lg hover:bg-primary-600 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGenerating ? (
               <Loader2 className="w-5 h-5 animate-spin" />

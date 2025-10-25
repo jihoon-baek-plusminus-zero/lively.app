@@ -23,9 +23,9 @@ export default function Home() {
   // 로딩 중이면 로딩 화면 표시
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#202020]">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <div className="w-16 h-16 bg-primary dark:bg-[#3B82F6] rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Mic className="w-8 h-8 text-white" />
           </div>
           <p className="text-gray-600 dark:text-gray-400">{t('home.loading')}</p>
@@ -35,15 +35,15 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#202020]">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50">
+      <header className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-primary dark:bg-[#3B82F6] rounded-lg flex items-center justify-center">
               <Mic className="w-5 h-5 text-white" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold text-primary">
               {t('app.name')}
             </span>
           </div>
@@ -51,7 +51,7 @@ export default function Home() {
             <LanguageSelector />
             <Link
               href="/login"
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2"
+              className="px-6 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 hover:shadow-lg transition-all duration-200 flex items-center gap-2"
             >
               {t('home.header.cta')}
               <ArrowRight className="w-4 h-4" />
@@ -65,17 +65,17 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           {/* Main Content */}
           <div className="text-center mb-20">
-            <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-6xl font-bold mb-6 text-gray-900 dark:text-white">
               {t('home.hero.title')}
               <br />
-              {t('home.hero.subtitle')}
+              <span className="text-primary">{t('home.hero.subtitle')}</span>
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto whitespace-pre-line">
               {t('home.hero.description')}
             </p>
             <Link
               href="/login"
-              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-200 inline-flex items-center gap-3"
+              className="px-8 py-4 bg-primary text-white rounded-xl font-semibold text-lg hover:bg-primary-600 hover:shadow-xl transition-all duration-200 inline-flex items-center gap-3"
             >
               {t('home.cta.start')}
               <ArrowRight className="w-5 h-5" />
@@ -88,25 +88,25 @@ export default function Home() {
               icon={<Mic className="w-6 h-6" />}
               title={t('feature.realtime.title')}
               description={t('feature.realtime.desc')}
-              gradient="from-blue-500 to-cyan-500"
+              color="bg-primary dark:bg-[#3B82F6]"
             />
             <FeatureCard
               icon={<Languages className="w-6 h-6" />}
               title={t('feature.translation.title')}
               description={t('feature.translation.desc')}
-              gradient="from-purple-500 to-pink-500"
+              color="bg-primary-600"
             />
             <FeatureCard
               icon={<MessageSquare className="w-6 h-6" />}
               title={t('feature.ai.title')}
               description={t('feature.ai.desc')}
-              gradient="from-orange-500 to-red-500"
+              color="bg-primary-700"
             />
             <FeatureCard
               icon={<Sparkles className="w-6 h-6" />}
               title={t('feature.search.title')}
               description={t('feature.search.desc')}
-              gradient="from-green-500 to-emerald-500"
+              color="bg-primary-500"
             />
           </div>
 
@@ -115,9 +115,9 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
               {t('home.demo.title')}
             </h2>
-            <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl flex items-center justify-center">
+            <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-primary dark:bg-[#3B82F6] rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mic className="w-10 h-10 text-white" />
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 text-lg">
@@ -130,11 +130,11 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 dark:bg-gray-950 text-white py-12">
+      <footer className="bg-gray-900 dark:bg-black text-white py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-6 h-6 bg-primary dark:bg-[#3B82F6] rounded-lg flex items-center justify-center">
                 <Mic className="w-4 h-4 text-white" />
               </div>
               <span className="text-xl font-bold">{t('app.name')}</span>
@@ -153,17 +153,17 @@ function FeatureCard({
   icon,
   title,
   description,
-  gradient,
+  color,
 }: {
   icon: React.ReactNode
   title: string
   description: string
-  gradient: string
+  color: string
 }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-700">
       <div
-        className={`w-12 h-12 bg-gradient-to-br ${gradient} rounded-lg flex items-center justify-center mb-4 text-white`}
+        className={`w-12 h-12 ${color} rounded-lg flex items-center justify-center mb-4 text-white`}
       >
         {icon}
       </div>
