@@ -113,7 +113,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="w-80 bg-white dark:bg-[#202020] border-r border-gray-200 dark:border-gray-700 flex flex-col">
+    <aside className="w-80 bg-[#F9F9F9] dark:bg-[#181818] border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Sidebar Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center mb-6">
@@ -146,7 +146,7 @@ export default function Sidebar({
       </div>
 
       {/* Lectures List */}
-      <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-[#202020]">
+      <div className="flex-1 overflow-y-auto p-4 bg-[#F9F9F9] dark:bg-[#181818]">
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
@@ -269,7 +269,7 @@ export default function Sidebar({
       <ThemeToggle />
 
       {/* User Profile */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#202020]">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-[#F9F9F9] dark:bg-[#181818]">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 bg-primary dark:bg-[#3B82F6] rounded-full flex items-center justify-center text-white font-semibold">
             {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}

@@ -96,9 +96,9 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white dark:bg-[#202020]">
+    <div className="flex-1 flex flex-col bg-white dark:bg-[#212121]">
       {/* Panel Header */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#212121]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -201,7 +201,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
               }}
               placeholder={t('chat.input.placeholder')}
               disabled={isGenerating}
-              className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none placeholder:text-gray-400 dark:placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#303030] text-black dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none placeholder:text-[#DCDCDC] dark:placeholder:text-[#4F4F4F] disabled:opacity-50 disabled:cursor-not-allowed"
               rows={2}
             />
           </div>
