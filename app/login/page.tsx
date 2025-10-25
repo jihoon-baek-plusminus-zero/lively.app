@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Mail, Lock, ArrowLeft, Loader2, Mic } from 'lucide-react'
+import Image from 'next/image'
+import { Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -53,8 +54,14 @@ export default function LoginPage() {
         <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary dark:bg-[#3B82F6] rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Mic className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 mx-auto mb-4">
+              <Image
+                src="/icon.png"
+                alt="Livey Icon"
+                width={64}
+                height={64}
+                className="w-full h-full"
+              />
             </div>
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
               {t('auth.login.title')}
