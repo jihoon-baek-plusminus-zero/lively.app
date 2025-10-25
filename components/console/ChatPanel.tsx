@@ -105,6 +105,9 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('chat.title')}</h2>
           </div>
         </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          {t('chat.paste.guidance')}
+        </p>
       </div>
 
       {/* Chat Messages */}

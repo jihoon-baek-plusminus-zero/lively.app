@@ -57,38 +57,23 @@ export async function POST(request: NextRequest) {
 
     console.log(`[API/EMBEDDINGS/SEARCH] ✅ 벡터 검색 완료: ${data?.length || 0}개 결과 (${Date.now() - searchStartTime}ms)`)
 
-    // 시간 가중치 적용 (최근 것일수록 가중치 높임)
-    const now = new Date().getTime()
-    const results = (data || []).map((item: any, index: number) => {
-      const createdAt = new Date(item.created_at).getTime()
-      const ageInHours = (now - createdAt) / (1000 * 60 * 60)
-
-      // 시간 감쇠 계수 (1시간 = 0.9, 2시간 = 0.81, ...)
-      const timeDecay = Math.exp(-ageInHours * 0.1)
-
-      // 최종 점수 = 유사도 * 시간 가중치
-      const finalScore = item.similarity * (0.7 + 0.3 * timeDecay)
-
+    // 순수 유사도만 사용 (시간 가중치 제거, 상위 5개만)
+    const results = (data || []).slice(0, 5).map((item: any) => {
       return {
         content: item.content,
         similarity: item.similarity,
-        timeDecay,
-        finalScore,
         created_at: item.created_at,
       }
     })
 
-    // 최종 점수로 재정렬
-    results.sort((a: any, b: any) => b.finalScore - a.finalScore)
-
     const totalDuration = Date.now() - startTime
-    console.log(`[API/EMBEDDINGS/SEARCH] 🎉 검색 완료: ${results.length}개 결과, 시간 가중치 적용 (총 ${totalDuration}ms)`)
+    console.log(`[API/EMBEDDINGS/SEARCH] 🎉 검색 완료: ${results.length}개 결과 (순수 유사도, 상위 5개) (총 ${totalDuration}ms)`)
 
-    // 상위 3개 결과 로깅
+    // 상위 결과 로깅
     if (results.length > 0) {
       console.log(`[API/EMBEDDINGS/SEARCH] 📊 상위 결과:`)
-      results.slice(0, 3).forEach((r: any, i: number) => {
-        console.log(`  ${i + 1}. 유사도: ${(r.similarity * 100).toFixed(1)}%, 최종점수: ${(r.finalScore * 100).toFixed(1)}%, 내용: "${r.content.substring(0, 40)}..."`)
+      results.forEach((r: any, i: number) => {
+        console.log(`  ${i + 1}. 유사도: ${(r.similarity * 100).toFixed(1)}%, 내용: "${r.content.substring(0, 40)}..."`)
       })
     }
 

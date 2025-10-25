@@ -15,6 +15,7 @@ import { useLectures, type Lecture } from '@/hooks/useLectures'
 import { useCaptions } from '@/hooks/useCaptions'
 import { useCaptionsList } from '@/hooks/useCaptionsList'
 import { useEmbeddingGenerator } from '@/hooks/useEmbeddingGenerator'
+import { useSummaryGenerator } from '@/hooks/useSummaryGenerator'
 import { uploadAudioFile, downloadAudioFile, downloadTranscript } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
 
@@ -51,6 +52,13 @@ export default function ConsolePage() {
   useEmbeddingGenerator({
     lectureId: selectedLecture?.id || null,
     isRecording: activeRecording,
+  })
+
+  // 실시간 요약 생성 (100개 캡션마다)
+  useSummaryGenerator({
+    lectureId: selectedLecture?.id || null,
+    isRecording: activeRecording,
+    captionCount: savedCaptions.length,
   })
 
   // 녹음 중: 오디오 녹음 중이고 (일시정지 아니거나 Deepgram 연결됨)
@@ -571,7 +579,6 @@ export default function ConsolePage() {
                         setShowMenu(!showMenu)
                       }}
                       className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-                      disabled={isRecording}
                     >
                       <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </button>
@@ -710,7 +717,7 @@ export default function ConsolePage() {
 
               {/* 자막 개수 */}
               <span className="text-gray-600 dark:text-gray-400">
-                {t('console.status.deepgram.connected')} • {deepgram.captions.filter((c) => c.isFinal).length} {t('console.status.captions')}
+                {deepgram.captions.filter((c) => c.isFinal).length} {t('console.status.captions')}
               </span>
             </div>
           )}

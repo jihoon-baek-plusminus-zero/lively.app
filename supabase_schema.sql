@@ -64,6 +64,17 @@ CREATE TABLE IF NOT EXISTS embeddings (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 6. 강의 요약 테이블 (슬라이딩 윈도우 요약)
+CREATE TABLE IF NOT EXISTS lecture_summaries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lecture_id UUID NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
+  summary TEXT NOT NULL,
+  caption_count INTEGER NOT NULL DEFAULT 0,
+  last_caption_id UUID REFERENCES captions(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ================================================================
 -- 인덱스 생성 (성능 최적화)
 -- ================================================================
@@ -87,6 +98,10 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created
 CREATE INDEX IF NOT EXISTS idx_embeddings_lecture_id ON embeddings(lecture_id);
 CREATE INDEX IF NOT EXISTS idx_embeddings_vector ON embeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
 
+-- 요약 조회 최적화
+CREATE INDEX IF NOT EXISTS idx_lecture_summaries_lecture_id ON lecture_summaries(lecture_id);
+CREATE INDEX IF NOT EXISTS idx_lecture_summaries_updated_at ON lecture_summaries(updated_at DESC);
+
 -- ================================================================
 -- Row Level Security (RLS) 정책
 -- ================================================================
@@ -97,6 +112,7 @@ ALTER TABLE captions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE embeddings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lecture_summaries ENABLE ROW LEVEL SECURITY;
 
 -- 강의 정책: 본인의 강의만 접근 가능
 CREATE POLICY "Users can view their own lectures"
@@ -175,6 +191,37 @@ CREATE POLICY "Users can insert embeddings to their lectures"
     EXISTS (
       SELECT 1 FROM lectures
       WHERE lectures.id = embeddings.lecture_id
+      AND lectures.user_id = auth.uid()
+    )
+  );
+
+-- 요약 정책: 강의 소유자만 접근 가능
+CREATE POLICY "Users can view summaries of their lectures"
+  ON lecture_summaries FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM lectures
+      WHERE lectures.id = lecture_summaries.lecture_id
+      AND lectures.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can insert summaries to their lectures"
+  ON lecture_summaries FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM lectures
+      WHERE lectures.id = lecture_summaries.lecture_id
+      AND lectures.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can update summaries of their lectures"
+  ON lecture_summaries FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM lectures
+      WHERE lectures.id = lecture_summaries.lecture_id
       AND lectures.user_id = auth.uid()
     )
   );

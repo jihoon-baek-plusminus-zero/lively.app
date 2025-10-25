@@ -559,17 +559,17 @@ export const translations = {
   },
   'console.welcome.select': {
     ko: '왼쪽에서 녹음을 선택하거나',
-    en: 'Select a record from left',
+    en: 'Select a record from the left',
     ja: '左から録音を選択するか',
     zh: '从左侧选择录音',
     es: 'Selecciona una grabación de la izquierda',
   },
   'console.welcome.create': {
     ko: '"+ 새 녹음" 버튼을 클릭하여 새로 만드세요!',
-    en: 'or click "+ New Record" to make new one!',
-    ja: 'または「+ 新しい録音」をクリックして新規作成！',
-    zh: '或点击"+ 新录音"创建新的！',
-    es: 'o haz clic en "+ Nueva grabación" para crear una nueva!',
+    en: 'or click "+ New Record" button to create a new one!',
+    ja: 'または「+ 新しい録音」ボタンをクリックして新規作成！',
+    zh: '或点击"+ 新录音"按钮创建新的！',
+    es: 'o haz clic en el botón "+ Nueva grabación" para crear una nueva!',
   },
   'console.edit.double.click': {
     ko: '더블클릭하여 수정',
@@ -729,11 +729,11 @@ export const translations = {
 
   // Console Info
   'console.info.select.or.create': {
-    ko: '좌측에서 강의를 선택하거나 "새 강의 시작" 버튼을 클릭하세요',
-    en: 'Select a lecture from the left or click "New Lecture" button',
-    ja: '左側から講義を選択するか、「新しい講義を開始」ボタンをクリックしてください',
-    zh: '从左侧选择讲座或点击"开始新讲座"按钮',
-    es: 'Selecciona una conferencia de la izquierda o haz clic en el botón "Nueva conferencia"',
+    ko: '좌측에서 녹음을 선택하거나 "+ 새 녹음" 버튼을 클릭하세요',
+    en: 'Select a record from the left or click "+ New Record" button',
+    ja: '左側から録音を選択するか、「+ 新しい録音」ボタンをクリックしてください',
+    zh: '从左侧选择录音或点击"+ 新录音"按钮',
+    es: 'Selecciona una grabación de la izquierda o haz clic en el botón "+ Nueva grabación"',
   },
   'console.loading': {
     ko: '로딩 중...',
@@ -1005,6 +1005,13 @@ export const translations = {
     ja: 'トピックに関連する質問にのみ回答できます',
     zh: '我只能回答与主题相关的问题',
     es: 'Solo puedo responder preguntas relacionadas con el tema',
+  },
+  'chat.paste.guidance': {
+    ko: '직접 언급하고자 하는 대본을 복사해 붙여넣기 해 질문하실 때 가장 정확도가 높습니다',
+    en: 'For the most accurate results, copy and paste the specific transcript you want to reference',
+    ja: '最も正確な結果を得るには、参照したい特定のトランスクリプトをコピーして貼り付けてください',
+    zh: '为获得最准确的结果，请复制并粘贴您要引用的特定文本',
+    es: 'Para obtener los resultados más precisos, copie y pegue la transcripción específica que desea consultar',
   },
 
   // Theme Toggle
