@@ -266,23 +266,48 @@ export default function ConsolePage() {
 
     // 녹음 중이면 스트림을 재시작
     if (isRecording && selectedLecture) {
-      console.log('🔄 마이크 변경 중... 새 디바이스:', newMicId || 'default')
+      console.log('🔄 마이크 변경 프로세스 시작... 새 디바이스:', newMicId || 'default')
+
+      // 현재 일시정지 상태 저장
+      const wasRecording = !isPaused
 
       try {
-        // 1. 현재 녹음 중지 (오디오만, Deepgram은 유지)
+        // 1. 녹음 중이었다면 일시정지
+        if (wasRecording) {
+          console.log('⏸️  마이크 변경을 위해 자동 일시정지')
+          audioRecorder.pauseRecording()
+          deepgram.pause()
+          setIsPaused(true)
+        }
+
+        // 2. 현재 녹음 중지 (오디오 스트림 해제)
+        console.log('🛑 기존 오디오 스트림 중지')
         await audioRecorder.stopRecording()
 
-        // 2. 새 마이크로 녹음 재시작
+        // 3. Deepgram 연결 해제
+        console.log('🔌 Deepgram 연결 해제')
+        await deepgram.disconnect()
+
+        // 4. 새 마이크로 녹음 시작
+        console.log('🎤 새 마이크로 스트림 시작:', newMicId || 'default')
         const newStream = await audioRecorder.startRecording(newMicId || undefined)
 
         if (!newStream) {
           throw new Error('새 마이크 스트림을 가져올 수 없습니다')
         }
 
-        // 3. Deepgram 연결 재시작
+        // 5. Deepgram 재연결
+        console.log('📡 Deepgram 재연결')
         const audioLanguages = selectedLecture.audio_languages || ['ko']
-        await deepgram.disconnect()
         await deepgram.connect(newStream, audioLanguages)
+
+        // 6. 원래 녹음 중이었다면 자동 재개
+        if (wasRecording) {
+          console.log('▶️  마이크 변경 완료, 녹음 자동 재개')
+          audioRecorder.resumeRecording()
+          deepgram.resume()
+          setIsPaused(false)
+        }
 
         console.log('✅ 마이크 변경 완료')
       } catch (error) {
