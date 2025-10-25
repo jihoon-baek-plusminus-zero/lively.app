@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Plus, Clock, ChevronRight, Mic, LogOut, Loader2, MoreVertical, Edit2, Trash2, User } from 'lucide-react'
+import { Plus, Clock, ChevronRight, Mic, LogOut, Loader2, MoreVertical, Edit2, Trash2, User, ChevronLeft, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLectures, type Lecture } from '@/hooks/useLectures'
@@ -15,12 +15,16 @@ interface SidebarProps {
   selectedLectureId: string | null
   onSelectLecture: (lectureId: string) => void
   onCreateLecture: (lecture: Lecture) => void
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
 export default function Sidebar({
   selectedLectureId,
   onSelectLecture,
   onCreateLecture,
+  isCollapsed = false,
+  onToggleCollapse,
 }: SidebarProps) {
   const { user, signOut } = useAuth()
   const { t } = useLanguage()
@@ -113,18 +117,41 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="w-80 bg-[#F9F9F9] dark:bg-[#181818] border-r border-gray-200 dark:border-gray-700 flex flex-col">
-      {/* Sidebar Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center mb-6">
-          <Image
-            src="/logo.png"
-            alt="Livey Logo"
-            width={200}
-            height={50}
-            className="h-10 w-auto"
-          />
+    <aside className={`${isCollapsed ? 'w-16' : 'w-80'} bg-[#F9F9F9] dark:bg-[#181818] border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out`}>
+      {/* Collapsed State - Show only expand button */}
+      {isCollapsed ? (
+        <div className="flex-1 flex items-center justify-center">
+          <button
+            onClick={onToggleCollapse}
+            className="p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            title="Expand sidebar"
+          >
+            <ArrowRight className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+          </button>
         </div>
+      ) : (
+        <>
+          {/* Sidebar Header */}
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            {/* Collapse Button */}
+            <div className="flex items-center justify-between mb-6">
+              <Image
+                src="/logo.png"
+                alt="Livey Logo"
+                width={200}
+                height={50}
+                className="h-10 w-auto"
+              />
+              {onToggleCollapse && (
+                <button
+                  onClick={onToggleCollapse}
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                  title="Collapse sidebar"
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                </button>
+              )}
+            </div>
 
         <button
           onClick={() => setShowLanguageModal(true)}
@@ -309,6 +336,8 @@ export default function Sidebar({
           onConfirm={handleCreateLecture}
           onClose={() => setShowLanguageModal(false)}
         />
+      )}
+        </>
       )}
     </aside>
   )

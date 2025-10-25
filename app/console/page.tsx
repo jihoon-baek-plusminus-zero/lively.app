@@ -7,7 +7,7 @@ import Sidebar from '@/components/console/Sidebar'
 import CaptionPanel from '@/components/console/CaptionPanel'
 import ChatPanel from '@/components/console/ChatPanel'
 import TranslationActivationModal from '@/components/console/TranslationActivationModal'
-import { Play, Square, Mic, AlertCircle, Pause, Download, FileText, Loader2, MoreVertical, Edit2, Trash2, Check, X } from 'lucide-react'
+import { Play, Square, Mic, AlertCircle, Pause, Download, FileText, Loader2, MoreVertical, Edit2, Trash2, Check, X, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAudioRecorder } from '@/hooks/useAudioRecorder'
@@ -43,6 +43,11 @@ export default function ConsolePage() {
   const [selectedMicId, setSelectedMicId] = useState<string>('')
   const menuRef = useRef<HTMLDivElement>(null)
 
+  // Mobile responsive state
+  const [isMobile, setIsMobile] = useState(false)
+  const [showMobileDetail, setShowMobileDetail] = useState(false)
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false)
+
   // Hooks
   const audioRecorder = useAudioRecorder()
   const deepgram = useDeepgram()
@@ -69,6 +74,29 @@ export default function ConsolePage() {
   const isCompleted = selectedLecture?.status === 'completed' || selectedLecture?.status === 'not_recorded'
   // 실제 녹음 진행 중 (일시정지 아님)
   const isActiveRecording = isRecording && !isPaused
+
+  // Breakpoint detection for mobile responsiveness (768px)
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)')
+
+    const handleMediaQueryChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(e.matches)
+      // When switching to desktop, reset mobile detail view
+      if (!e.matches) {
+        setShowMobileDetail(false)
+      }
+    }
+
+    // Set initial value
+    handleMediaQueryChange(mediaQuery)
+
+    // Listen for changes
+    mediaQuery.addEventListener('change', handleMediaQueryChange)
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleMediaQueryChange)
+    }
+  }, [])
 
   // 페이지 로드 시 녹음 중인 항목 체크 (최초 1회만)
   useEffect(() => {
@@ -567,7 +595,17 @@ export default function ConsolePage() {
     if (lecture) {
       setSelectedLecture(lecture)
       console.log('📋 강의 선택:', lecture.title, '(상태:', lecture.status, ')')
+
+      // On mobile, show detail view when lecture is selected
+      if (isMobile) {
+        setShowMobileDetail(true)
+      }
     }
+  }
+
+  // Mobile back button handler
+  const handleMobileBack = () => {
+    setShowMobileDetail(false)
   }
 
   // 번역 토글 핸들러 (비활성화 상태에서만 모달 띄움)
@@ -646,15 +684,275 @@ export default function ConsolePage() {
 
   return (
     <div className="h-screen flex bg-gray-50 dark:bg-gray-950">
-      {/* Left Sidebar - 강의 리스트 */}
-      <Sidebar
-        selectedLectureId={selectedLecture?.id || null}
-        onSelectLecture={handleSelectLecture}
-        onCreateLecture={handleCreateLecture}
-      />
+      {/* Mobile Layout */}
+      {isMobile ? (
+        showMobileDetail && selectedLecture ? (
+          /* Mobile Detail View - Fullscreen with back button */
+          <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
+            {/* Mobile Header with Back Button */}
+            <header className="bg-white dark:bg-[#202020] border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+              <div className="flex items-center gap-3 mb-3">
+                <button
+                  onClick={handleMobileBack}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                </button>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <div className="w-6 h-6 flex-shrink-0">
+                    <Image
+                      src="/icon.png"
+                      alt="Livey Icon"
+                      width={24}
+                      height={24}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  {isEditingTitle ? (
+                    <div className="flex items-center gap-2 flex-1">
+                      <input
+                        type="text"
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveTitle()
+                          if (e.key === 'Escape') handleCancelEdit()
+                        }}
+                        className="flex-1 px-2 py-1 text-sm border border-blue-500 dark:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleSaveTitle}
+                        className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                      >
+                        <Check className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="p-1 bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <h1
+                      className="text-base font-bold text-gray-800 dark:text-gray-200 truncate"
+                      onDoubleClick={handleTitleDoubleClick}
+                    >
+                      {selectedLecture.title}
+                    </h1>
+                  )}
+                  {selectedLecture && !isEditingTitle && (
+                    <div className="relative" ref={menuRef}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setShowMenu(!showMenu)
+                        }}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                      >
+                        <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                      </button>
+                      {showMenu && (
+                        <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+                          <button
+                            onClick={handleEditTitle}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            {t('console.menu.edit')}
+                          </button>
+                          <button
+                            onClick={handleDeleteLecture}
+                            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            {t('console.menu.delete')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
+              {/* Recording Controls - Mobile */}
+              <div className="flex flex-wrap items-center gap-2">
+                {!isCompleted && !isSavingAudio && (
+                  <select
+                    value={selectedMicId}
+                    onChange={(e) => handleMicrophoneChange(e.target.value)}
+                    disabled={!selectedLecture}
+                    className="flex-1 min-w-[120px] px-2 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">{t('console.microphone.default')}</option>
+                    {audioDevices.map((device) => (
+                      <option key={device.deviceId} value={device.deviceId}>
+                        {device.label || `${t('console.microphone.label')} ${device.deviceId.substring(0, 8)}`}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {!isRecording && !isCompleted && !isSavingAudio && (
+                  <button
+                    onClick={handleStartRecording}
+                    disabled={!selectedLecture || audioRecorder.isRecording || deepgram.isConnected}
+                    className="flex-1 px-3 py-1.5 text-xs bg-primary dark:bg-[#3B82F6] hover:bg-primary-600 dark:hover:bg-blue-500 text-white rounded font-medium transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Play className="w-3 h-3" />
+                    {t('console.button.start.recording')}
+                  </button>
+                )}
+
+                {isRecording && (
+                  <>
+                    <button
+                      onClick={handlePauseResume}
+                      className="flex-1 px-3 py-1.5 text-xs bg-yellow-500 text-white rounded font-medium transition-all flex items-center justify-center gap-1.5"
+                    >
+                      {isPaused ? (
+                        <>
+                          <Play className="w-3 h-3" />
+                          {t('console.button.resume')}
+                        </>
+                      ) : (
+                        <>
+                          <Pause className="w-3 h-3" />
+                          {t('console.button.pause')}
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleStopRecording}
+                      className="flex-1 px-3 py-1.5 text-xs bg-red-500 text-white rounded font-medium transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <Square className="w-3 h-3" />
+                      {t('console.button.stop.recording')}
+                    </button>
+                  </>
+                )}
+
+                {isSavingAudio ? (
+                  <div className="flex items-center gap-2 px-3 py-1.5">
+                    <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
+                    <span className="text-gray-600 dark:text-gray-400 text-xs">{t('console.status.saving')}</span>
+                  </div>
+                ) : (
+                  isCompleted && (
+                    <>
+                      {selectedLecture.status === 'not_recorded' ? (
+                        <div className="px-3 py-1.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs text-yellow-800 dark:text-yellow-300">
+                          {t('console.audio.not.saved')}
+                        </div>
+                      ) : (
+                        selectedLecture.audio_file_url && (
+                          <button
+                            onClick={handleDownloadAudio}
+                            className="flex-1 px-3 py-1.5 text-xs bg-green-600 text-white rounded font-medium transition-all flex items-center justify-center gap-1.5"
+                          >
+                            <Download className="w-3 h-3" />
+                            {t('console.button.download.audio')}
+                          </button>
+                        )
+                      )}
+                      <button
+                        onClick={handleDownloadTranscript}
+                        disabled={savedCaptions.length === 0}
+                        className="flex-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded font-medium transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <FileText className="w-3 h-3" />
+                        {t('console.button.download.transcript')}
+                      </button>
+                    </>
+                  )
+                )}
+              </div>
+
+              {/* Recording Status - Mobile */}
+              {isRecording && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    {isPaused ? (
+                      <>
+                        <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">{t('console.status.paused')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">{t('console.status.recording')}</span>
+                      </>
+                    )}
+                  </div>
+                  <span className="text-gray-300 dark:text-gray-600">|</span>
+                  <span className="text-blue-600 dark:text-blue-400 font-mono font-bold">
+                    {formatTime(elapsedTime)}
+                  </span>
+                  <span className="text-gray-300 dark:text-gray-600">|</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {deepgram.captions.filter((c) => c.isFinal).length} {t('console.status.captions')}
+                  </span>
+                </div>
+              )}
+
+              {/* Error Messages - Mobile */}
+              {(audioRecorder.error || deepgram.error) && (
+                <div className="mt-2 flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-800 dark:text-red-300">
+                    {audioRecorder.error || deepgram.error}
+                  </p>
+                </div>
+              )}
+            </header>
+
+            {/* Mobile Vertical Stack - CaptionPanel (top) + ChatPanel (bottom) */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-hidden">
+                <CaptionPanel
+                  isRecording={isActiveRecording}
+                  isCompleted={isCompleted}
+                  captions={deepgram.captions}
+                  savedCaptions={savedCaptions}
+                  translationEnabled={translationEnabled}
+                  translationTargetLang={translationTargetLang}
+                  onTranslationToggle={handleTranslationToggle}
+                  onTranslationTargetChange={setTranslationTargetLang}
+                  onTranslationComplete={isCompleted ? undefined : handleTranslationComplete}
+                  onBulkTranslationComplete={handleBulkTranslationComplete}
+                  realTimeTranslations={realTimeTranslations}
+                />
+              </div>
+              <div className="flex-1 overflow-hidden border-t border-gray-200 dark:border-gray-700">
+                <ChatPanel lectureId={selectedLecture.id} />
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Mobile Lecture List - Fullscreen */
+          <div className="flex-1 overflow-hidden">
+            <Sidebar
+              selectedLectureId={selectedLecture?.id || null}
+              onSelectLecture={handleSelectLecture}
+              onCreateLecture={handleCreateLecture}
+            />
+          </div>
+        )
+      ) : (
+        /* Desktop Layout */
+        <>
+          {/* Left Sidebar - 강의 리스트 */}
+          <Sidebar
+            selectedLectureId={selectedLecture?.id || null}
+            onSelectLecture={handleSelectLecture}
+            onCreateLecture={handleCreateLecture}
+            isCollapsed={isDesktopSidebarCollapsed}
+            onToggleCollapse={() => setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed)}
+          />
+
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
         {/* Top Header */}
         <header className="bg-white dark:bg-[#202020] border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -938,7 +1236,9 @@ export default function ConsolePage() {
             </div>
           )}
         </div>
-      </div>
+          </div>
+        </>
+      )}
 
       {/* Translation Activation Modal */}
       {showTranslationModal && selectedLecture && (
