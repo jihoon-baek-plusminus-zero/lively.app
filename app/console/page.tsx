@@ -69,6 +69,60 @@ export default function ConsolePage() {
   // 실제 녹음 진행 중 (일시정지 아님)
   const isActiveRecording = isRecording && !isPaused
 
+  // 페이지 로드 시 녹음 중인 항목 체크 (최초 1회만)
+  useEffect(() => {
+    const checkActiveRecording = async () => {
+      if (!user) return
+
+      try {
+        const { data, error } = await supabase
+          .from('lectures')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'recording')
+          .limit(1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          console.log('⚠️ 녹음 중인 항목 발견, multi_warning 페이지로 이동')
+          router.push('/multi_warning')
+        }
+      } catch (error) {
+        console.error('녹음 중인 항목 체크 실패:', error)
+      }
+    }
+
+    // 세션 스토리지로 이미 체크했는지 확인 (새로고침 시에만 체크)
+    const hasChecked = sessionStorage.getItem('recording_checked')
+    if (!hasChecked && user) {
+      checkActiveRecording()
+      sessionStorage.setItem('recording_checked', 'true')
+    }
+  }, [user, router])
+
+  // Broadcast 채널 리스너 (다른 세션에서 강제 새로고침 명령 수신)
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase.channel('session_control')
+
+    channel
+      .on('broadcast', { event: 'force_refresh' }, (payload) => {
+        if (payload.payload.userId === user.id) {
+          console.log('🔄 다른 세션에서 강제 새로고침 명령 수신')
+          // 세션 체크 플래그 제거 후 새로고침
+          sessionStorage.removeItem('recording_checked')
+          window.location.reload()
+        }
+      })
+      .subscribe()
+
+    return () => {
+      channel.unsubscribe()
+    }
+  }, [user])
+
   // selectedLecture 상태 동기화
   useEffect(() => {
     if (selectedLecture && lectures.length > 0) {

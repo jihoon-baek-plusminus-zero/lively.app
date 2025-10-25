@@ -1035,6 +1035,36 @@ export const translations = {
     es: 'Para obtener los resultados más precisos, copie y pegue la transcripción específica que desea consultar',
   },
 
+  // Multi Warning
+  'multi.warning.title': {
+    ko: '다중 접속 경고',
+    en: 'Multiple Connection Warning',
+    ja: '多重接続警告',
+    zh: '多重连接警告',
+    es: 'Advertencia de conexión múltiple',
+  },
+  'multi.warning.message': {
+    ko: '현재 다른 브라우저에서 \'녹음중\'인 것으로 확인됩니다. 이 창에서 새롭게 접속시 기존 브라우저의 녹음이 중단되며 저장에 실패할 수 있습니다.',
+    en: 'A recording is currently in progress in another browser. Connecting from this window may interrupt the existing recording and cause save failure.',
+    ja: '現在、他のブラウザで「録音中」であることが確認されました。このウィンドウから新たに接続すると、既存のブラウザの録音が中断され、保存に失敗する可能性があります。',
+    zh: '当前在其他浏览器中检测到"录音中"。从此窗口连接可能会中断现有浏览器的录音并导致保存失败。',
+    es: 'Se detectó una grabación en curso en otro navegador. Conectarse desde esta ventana puede interrumpir la grabación existente y causar un fallo al guardar.',
+  },
+  'multi.warning.connect': {
+    ko: '녹음중인 항목이 없으며, 이 브라우저에서 접속',
+    en: 'No active recording, connect from this browser',
+    ja: '録音中の項目がなく、このブラウザから接続',
+    zh: '没有正在录音的项目，从此浏览器连接',
+    es: 'No hay grabación activa, conectar desde este navegador',
+  },
+  'multi.warning.cancel': {
+    ko: '접속을 취소하고 기존 녹음중 유지',
+    en: 'Cancel connection and keep existing recording',
+    ja: '接続をキャンセルして既存の録音を維持',
+    zh: '取消连接并保持现有录音',
+    es: 'Cancelar conexión y mantener grabación existente',
+  },
+
   // Theme Toggle
   'theme.light': {
     ko: 'Light',
