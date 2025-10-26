@@ -44,7 +44,7 @@ export default function AdminPage() {
             Access Denied
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8">
-            You don't have access to this page or this page does not exist.
+            You don&apos;t have access to this page or this page does not exist.
           </p>
           <button
             onClick={() => router.push('/console')}
