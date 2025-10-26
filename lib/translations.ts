@@ -357,6 +357,27 @@ export const translations = {
     zh: '返回首页',
     es: 'Volver al inicio',
   },
+  'auth.signup.success.title': {
+    ko: '회원가입 되었습니다',
+    en: 'Sign Up Successful',
+    ja: '登録が完了しました',
+    zh: '注册成功',
+    es: 'Registro exitoso',
+  },
+  'auth.signup.success.subtitle': {
+    ko: '환영합니다! Livey와 함께 스마트한 학습을 시작하세요.',
+    en: 'Welcome! Start your smart learning journey with Livey.',
+    ja: 'ようこそ！Liveyでスマートな学習を始めましょう。',
+    zh: '欢迎！与Livey一起开始智能学习之旅。',
+    es: '¡Bienvenido! Comienza tu viaje de aprendizaje inteligente con Livey.',
+  },
+  'auth.signup.success.button': {
+    ko: 'Livey 시작하기',
+    en: 'Start Livey',
+    ja: 'Liveyを始める',
+    zh: '开始使用Livey',
+    es: 'Comenzar con Livey',
+  },
   'auth.forgot.password': {
     ko: '비밀번호 찾기',
     en: 'Forgot Password',
