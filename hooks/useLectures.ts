@@ -26,7 +26,10 @@ export function useLectures() {
 
   // 강의 목록 가져오기
   const fetchLectures = useCallback(async () => {
-    if (!user) return
+    if (!user) {
+      setLoading(false)
+      return
+    }
 
     try {
       setLoading(true)
@@ -44,6 +47,7 @@ export function useLectures() {
     } catch (err: any) {
       console.error('강의 목록 가져오기 실패:', err)
       setError(err.message)
+      setLectures([]) // Set empty array on error to prevent infinite loop
     } finally {
       setLoading(false)
     }

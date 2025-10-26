@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 
 export interface UserUsage {
@@ -29,7 +29,6 @@ export function useUserUsage() {
 
     const fetchUsage = async () => {
       try {
-        const supabase = createClient()
         const { data, error: fetchError } = await supabase
           .from('user_usages')
           .select('*')
@@ -62,8 +61,25 @@ export function useUserUsage() {
           setUsage(data)
         }
       } catch (err) {
-        console.error('Error fetching user usage:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load usage data')
+        // Silently fail if table doesn't exist yet (migration not run)
+        const errorMessage = err instanceof Error ? err.message : ''
+        if (!errorMessage.includes('relation "public.user_usages" does not exist')) {
+          console.error('Error fetching user usage:', err)
+          setError(err instanceof Error ? err.message : 'Failed to load usage data')
+        }
+        // Set default usage data when table doesn't exist
+        setUsage({
+          id: '',
+          user_id: user.id,
+          signed_up_date: new Date().toISOString(),
+          total_recordable_time: 10800,
+          total_recorded_time: 0,
+          total_ai_credit: 1000,
+          total_ai_used: 0,
+          current_period_start: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
       } finally {
         setLoading(false)
       }
