@@ -1,0 +1,12 @@
+# Supabase Edge Functions (Deno runtime)
+supabase/functions
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx

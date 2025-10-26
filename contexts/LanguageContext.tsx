@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Language, translations, TranslationKey } from '@/lib/translations'
 
+export type { Language } from '@/lib/translations'
+
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void

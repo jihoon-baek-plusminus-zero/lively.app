@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as deepl from 'deepl-node'
 
+interface TranslateRequest {
+  text: string
+  targetLang: string
+  sourceLang?: string
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { text, targetLang, sourceLang } = await request.json()
+    const { text, targetLang, sourceLang }: TranslateRequest = await request.json()
 
     if (!text || !targetLang) {
       return NextResponse.json(
@@ -30,7 +36,7 @@ export async function POST(request: NextRequest) {
     // DeepL API 호출
     const result = await translator.translateText(
       text,
-      sourceLang || null,
+      (sourceLang as deepl.SourceLanguageCode) || null,
       deeplTargetLang as deepl.TargetLanguageCode
     )
 

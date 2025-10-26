@@ -25,8 +25,8 @@ export async function uploadAudioFile(
       console.error('❌ 오디오 업로드 실패:', error)
       console.error('❌ 에러 상세:', {
         message: error.message,
-        statusCode: error.statusCode,
-        error: error.error,
+        statusCode: (error as any).statusCode,
+        error: (error as any).error,
       })
       alert(`오디오 업로드 실패: ${error.message}`)
       return null

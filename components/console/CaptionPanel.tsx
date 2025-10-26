@@ -9,12 +9,15 @@ interface Caption {
   text: string
   isFinal: boolean
   timestamp: string
+  timestamp_seconds?: number
   speaker?: string
+  translated_text?: string
 }
 
 interface SavedCaption {
   id: string
   text: string
+  timestamp?: string
   timestamp_seconds: number
   speaker: string
   translated_text?: string
@@ -364,7 +367,9 @@ export default function CaptionPanel({
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatTimestamp(caption.timestamp_seconds)}
+                        {caption.timestamp_seconds !== undefined
+                          ? formatTimestamp(caption.timestamp_seconds)
+                          : caption.timestamp}
                       </span>
                     </div>
                   </div>
