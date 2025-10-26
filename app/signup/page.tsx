@@ -44,14 +44,8 @@ export default function SignupPage() {
           setError(signupError.message)
         }
       } else if (data?.user) {
-        // Check if email confirmation is required
-        if (data.user.identities?.length === 0) {
-          setSuccess(true)
-          setError(t('auth.signup.confirm.email'))
-        } else {
-          // Auto-login if no email confirmation required
-          router.push('/console')
-        }
+        // Redirect to email verification page
+        router.push('/verify-email')
       }
     } catch (err) {
       setError(t('auth.error.generic'))
