@@ -34,11 +34,6 @@ export default function AdminSidebar({ selectedMenu, onSelectMenu, isSuperAdmin 
       superAdminOnly: true,
     },
     {
-      id: 'user-settings',
-      label: '유저 설정',
-      icon: <Users className="w-5 h-5" />,
-    },
-    {
       id: 'bulk-user-settings',
       label: '유저 일괄 설정',
       icon: <UserCog className="w-5 h-5" />,

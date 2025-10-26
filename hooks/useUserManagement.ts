@@ -215,41 +215,30 @@ export function useUserManagement() {
       setLoading(true)
       setError(null)
 
-      // Get all users from auth.users via RPC or join with user_usages
-      const { data, error: queryError } = await supabase
-        .from('user_usages')
-        .select(`
-          *,
-          users:user_id (
-            id,
-            email
-          )
-        `)
-        .order('created_at', { ascending: false })
+      // Use RPC function to get all users with usage data
+      const { data, error: rpcError } = await supabase.rpc('get_all_users_with_usage')
 
-      if (queryError) throw queryError
+      if (rpcError) throw rpcError
 
-      if (!data) return []
+      if (!data || data.length === 0) return []
 
       // Transform the data
-      const users: UserWithUsage[] = data
-        .filter((item: any) => item.users && item.users.email)
-        .map((item: any) => ({
-          id: item.user_id,
-          email: item.users.email,
-          usage: {
-            id: item.id,
-            user_id: item.user_id,
-            signed_up_date: item.signed_up_date,
-            total_recordable_time: item.total_recordable_time,
-            total_recorded_time: item.total_recorded_time,
-            total_ai_credit: item.total_ai_credit,
-            total_ai_used: item.total_ai_used,
-            current_period_start: item.current_period_start,
-            created_at: item.created_at,
-            updated_at: item.updated_at,
-          },
-        }))
+      const users: UserWithUsage[] = data.map((item: any) => ({
+        id: item.user_id,
+        email: item.email,
+        usage: {
+          id: '', // RPC doesn't return this, but it's not used in UI
+          user_id: item.user_id,
+          signed_up_date: item.signed_up_date,
+          total_recordable_time: item.total_recordable_time,
+          total_recorded_time: item.total_recorded_time,
+          total_ai_credit: item.total_ai_credit,
+          total_ai_used: item.total_ai_used,
+          current_period_start: item.current_period_start,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+        },
+      }))
 
       return users
     } catch (err) {

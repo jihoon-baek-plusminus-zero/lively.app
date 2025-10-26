@@ -21,13 +21,11 @@ export function useUserUsage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchUsage = async () => {
     if (!user) {
       setLoading(false)
       return
     }
-
-    const fetchUsage = async () => {
       try {
         const { data, error: fetchError } = await supabase
           .from('user_usages')
@@ -80,11 +78,12 @@ export function useUserUsage() {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-      } finally {
-        setLoading(false)
-      }
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchUsage()
   }, [user])
 
@@ -131,5 +130,6 @@ export function useUserUsage() {
     getRecordedTime,
     getTotalQuotaTime,
     getRemainingAICredit,
+    refetchUsage: fetchUsage,
   }
 }

@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { UserCog, Clock, Coins, Loader2 } from 'lucide-react'
+import { UserCog, Clock, Coins, Loader2, ChevronRight, UserX, AlertTriangle } from 'lucide-react'
 import { useUserManagement, UserWithUsage } from '@/hooks/useUserManagement'
 
 export default function BulkUserSettings() {
-  const { loading, getAllUsers, bulkUpdateRecordingQuota, bulkUpdateAIQuota } =
+  const { loading, getAllUsers, bulkUpdateRecordingQuota, bulkUpdateAIQuota, updateRecordingQuota, updateAIQuota, deleteUser } =
     useUserManagement()
 
   // State
@@ -14,9 +14,13 @@ export default function BulkUserSettings() {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
 
+  // Individual user detail view
+  const [selectedUserForDetail, setSelectedUserForDetail] = useState<UserWithUsage | null>(null)
+
   // Modal states
   const [showRecordingModal, setShowRecordingModal] = useState(false)
   const [showAIModal, setShowAIModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   // Recording modal state
   const [recordingOperation, setRecordingOperation] = useState<'add' | 'subtract'>('add')
@@ -28,12 +32,23 @@ export default function BulkUserSettings() {
   const [aiCredits, setAICredits] = useState('')
   const [isUpdatingAI, setIsUpdatingAI] = useState(false)
 
+  // Delete modal state
+  const [isDeleting, setIsDeleting] = useState(false)
+
   // Alert state
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   const showAlert = (type: 'success' | 'error', message: string) => {
     setAlert({ type, message })
     setTimeout(() => setAlert(null), 3000)
+  }
+
+  // Format seconds to HH:MM:SS
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
   }
 
   // Load all users on mount
@@ -147,6 +162,100 @@ export default function BulkUserSettings() {
     }
   }
 
+  // Handle individual user recording update
+  const handleUpdateIndividualRecording = async () => {
+    if (!selectedUserForDetail || !recordingHours) {
+      showAlert('error', '시간을 입력해주세요')
+      return
+    }
+
+    const hours = parseFloat(recordingHours)
+    if (isNaN(hours) || hours <= 0) {
+      showAlert('error', '올바른 시간을 입력해주세요')
+      return
+    }
+
+    setIsUpdatingRecording(true)
+    try {
+      const success = await updateRecordingQuota(selectedUserForDetail.id, recordingOperation, hours)
+      if (success) {
+        showAlert('success', '녹음 한도가 업데이트되었습니다')
+        setShowRecordingModal(false)
+        setRecordingHours('')
+        // Refresh user list and update selected user
+        const allUsers = await getAllUsers()
+        setUsers(allUsers)
+        const updatedUser = allUsers.find(u => u.id === selectedUserForDetail.id)
+        if (updatedUser) setSelectedUserForDetail(updatedUser)
+      } else {
+        showAlert('error', '녹음 한도 업데이트에 실패했습니다')
+      }
+    } catch (err) {
+      showAlert('error', '업데이트 중 오류가 발생했습니다')
+    } finally {
+      setIsUpdatingRecording(false)
+    }
+  }
+
+  // Handle individual user AI update
+  const handleUpdateIndividualAI = async () => {
+    if (!selectedUserForDetail || !aiCredits) {
+      showAlert('error', '크레딧을 입력해주세요')
+      return
+    }
+
+    const credits = parseInt(aiCredits)
+    if (isNaN(credits) || credits <= 0) {
+      showAlert('error', '올바른 크레딧을 입력해주세요')
+      return
+    }
+
+    setIsUpdatingAI(true)
+    try {
+      const success = await updateAIQuota(selectedUserForDetail.id, aiOperation, credits)
+      if (success) {
+        showAlert('success', 'AI 크레딧이 업데이트되었습니다')
+        setShowAIModal(false)
+        setAICredits('')
+        // Refresh user list and update selected user
+        const allUsers = await getAllUsers()
+        setUsers(allUsers)
+        const updatedUser = allUsers.find(u => u.id === selectedUserForDetail.id)
+        if (updatedUser) setSelectedUserForDetail(updatedUser)
+      } else {
+        showAlert('error', 'AI 크레딧 업데이트에 실패했습니다')
+      }
+    } catch (err) {
+      showAlert('error', '업데이트 중 오류가 발생했습니다')
+    } finally {
+      setIsUpdatingAI(false)
+    }
+  }
+
+  // Handle delete individual user
+  const handleDeleteIndividualUser = async () => {
+    if (!selectedUserForDetail) return
+
+    setIsDeleting(true)
+    try {
+      const success = await deleteUser(selectedUserForDetail.id)
+      if (success) {
+        showAlert('success', '사용자가 삭제되었습니다')
+        setShowDeleteModal(false)
+        setSelectedUserForDetail(null)
+        // Refresh user list
+        const allUsers = await getAllUsers()
+        setUsers(allUsers)
+      } else {
+        showAlert('error', '사용자 삭제에 실패했습니다')
+      }
+    } catch (err) {
+      showAlert('error', '삭제 중 오류가 발생했습니다')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <div className="p-8">
       {/* Header */}
@@ -214,7 +323,7 @@ export default function BulkUserSettings() {
               {filteredUsers.map((user, index) => (
                 <div
                   key={user.id}
-                  className={`flex items-center gap-3 px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer ${
+                  className={`flex items-center gap-3 px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
                     selectedUserIds.includes(user.id)
                       ? 'bg-blue-50 dark:bg-blue-900/20'
                       : ''
@@ -223,15 +332,30 @@ export default function BulkUserSettings() {
                       ? 'border-b border-gray-200 dark:border-gray-700'
                       : ''
                   }`}
-                  onClick={() => handleToggleUser(user.id)}
                 >
                   <input
                     type="checkbox"
                     checked={selectedUserIds.includes(user.id)}
                     onChange={() => handleToggleUser(user.id)}
+                    onClick={(e) => e.stopPropagation()}
                     className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   />
-                  <span className="text-gray-900 dark:text-gray-100">{user.email}</span>
+                  <span
+                    className="flex-1 text-gray-900 dark:text-gray-100 cursor-pointer"
+                    onClick={() => handleToggleUser(user.id)}
+                  >
+                    {user.email}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedUserForDetail(user)
+                    }}
+                    className="px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center gap-1"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                    <span>개별 설정</span>
+                  </button>
                 </div>
               ))}
             </div>
@@ -267,6 +391,138 @@ export default function BulkUserSettings() {
         </button>
       </div>
 
+      {/* Individual User Detail Modal */}
+      {selectedUserForDetail && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">개별 유저 설정</h3>
+              <button
+                onClick={() => setSelectedUserForDetail(null)}
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* User Info */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mb-6">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                사용자 정보
+              </h4>
+              <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+                {selectedUserForDetail.email}
+              </p>
+            </div>
+
+            {/* Recording Quota */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mb-4">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                녹음 한도
+              </h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    내 녹음 한도:
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {Math.floor(selectedUserForDetail.usage.total_recordable_time / 3600)}시간
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    이번달 녹음 시간:
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {formatTime(selectedUserForDetail.usage.total_recorded_time)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    이번달 잔여 시간:
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {formatTime(
+                      Math.max(
+                        0,
+                        selectedUserForDetail.usage.total_recordable_time -
+                          selectedUserForDetail.usage.total_recorded_time
+                      )
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Credit */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mb-6">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                AI 질문 크레딧
+              </h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    내 AI 질문 credit:
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {selectedUserForDetail.usage.total_ai_credit}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    이번달 사용한 크레딧:
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {selectedUserForDetail.usage.total_ai_used}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    이번달 잔여 크레딧:
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {Math.max(0, selectedUserForDetail.usage.total_ai_credit - selectedUserForDetail.usage.total_ai_used)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <button
+                onClick={() => {
+                  setShowRecordingModal(true)
+                  setRecordingOperation('add')
+                  setRecordingHours('')
+                }}
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Clock className="w-4 h-4" />
+                <span className="text-sm">녹음 한도 추가/차감</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowAIModal(true)
+                  setAIOperation('add')
+                  setAICredits('')
+                }}
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Coins className="w-4 h-4" />
+                <span className="text-sm">AI 크레딧 추가/차감</span>
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <UserX className="w-4 h-4" />
+                <span className="text-sm">계정 삭제</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Recording Modal */}
       {showRecordingModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -275,7 +531,9 @@ export default function BulkUserSettings() {
               녹음 한도 추가/차감
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              {selectedUserIds.length}명의 유저에게 적용
+              {selectedUserForDetail
+                ? `${selectedUserForDetail.email}에게 적용`
+                : `${selectedUserIds.length}명의 유저에게 적용`}
             </p>
 
             {/* Toggle Buttons */}
@@ -329,7 +587,7 @@ export default function BulkUserSettings() {
                 취소
               </button>
               <button
-                onClick={handleUpdateRecording}
+                onClick={selectedUserForDetail ? handleUpdateIndividualRecording : handleUpdateRecording}
                 disabled={isUpdatingRecording}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -355,7 +613,9 @@ export default function BulkUserSettings() {
               AI 질문 크레딧 한도 추가/차감
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              {selectedUserIds.length}명의 유저에게 적용
+              {selectedUserForDetail
+                ? `${selectedUserForDetail.email}에게 적용`
+                : `${selectedUserIds.length}명의 유저에게 적용`}
             </p>
 
             {/* Toggle Buttons */}
@@ -409,7 +669,7 @@ export default function BulkUserSettings() {
                 취소
               </button>
               <button
-                onClick={handleUpdateAI}
+                onClick={selectedUserForDetail ? handleUpdateIndividualAI : handleUpdateAI}
                 disabled={isUpdatingAI}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -420,6 +680,55 @@ export default function BulkUserSettings() {
                   </>
                 ) : (
                   <span>적용</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Modal */}
+      {showDeleteModal && selectedUserForDetail && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">계정 삭제</h3>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                {selectedUserForDetail.email} 계정을 삭제하시겠습니까?
+              </p>
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                  경고: 모든 데이터가 삭제됩니다
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDeleteIndividualUser}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>삭제 중...</span>
+                  </>
+                ) : (
+                  <span>삭제</span>
                 )}
               </button>
             </div>

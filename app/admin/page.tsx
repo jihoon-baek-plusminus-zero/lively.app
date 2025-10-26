@@ -10,13 +10,13 @@ import UserSettings from '@/components/admin/UserSettings'
 import BulkUserSettings from '@/components/admin/BulkUserSettings'
 import { Loader2, Shield } from 'lucide-react'
 
-type MenuItem = 'admin-settings' | 'user-settings' | 'bulk-user-settings'
+type MenuItem = 'admin-settings' | 'bulk-user-settings'
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth()
   const { isAdmin, isSuperAdmin, loading: adminLoading } = useAdmin()
   const router = useRouter()
-  const [selectedMenu, setSelectedMenu] = useState<MenuItem>('user-settings')
+  const [selectedMenu, setSelectedMenu] = useState<MenuItem>('bulk-user-settings')
 
   // Show loading state
   if (authLoading || adminLoading) {
@@ -62,12 +62,10 @@ export default function AdminPage() {
     switch (selectedMenu) {
       case 'admin-settings':
         return <AdminSettings />
-      case 'user-settings':
-        return <UserSettings />
       case 'bulk-user-settings':
         return <BulkUserSettings />
       default:
-        return <UserSettings />
+        return <BulkUserSettings />
     }
   }
 

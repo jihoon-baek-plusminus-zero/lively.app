@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
   console.log('[API/CHAT] 💬 채팅 요청 시작')
 
   try {
-    const { messages, lectureId, userLanguage, userId } = await request.json()
+    const { messages, lectureId, userLanguage } = await request.json()
 
     if (!messages || !Array.isArray(messages)) {
       console.log('[API/CHAT] ❌ 메시지 배열 누락')
@@ -107,43 +107,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-
-    if (!userId) {
-      console.log('[API/CHAT] ❌ userId 누락')
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      )
-    }
-
-    // 1. AI 크레딧 확인
-    console.log('[API/CHAT] 💳 AI 크레딧 확인 중...')
-    const { data: creditCheck, error: creditError } = await supabase.rpc('check_ai_credits', {
-      p_user_id: userId,
-      p_required_credits: 1
-    })
-
-    if (creditError) {
-      console.error('[API/CHAT] ❌ 크레딧 확인 실패:', creditError)
-      return NextResponse.json(
-        { error: 'Failed to check AI credits' },
-        { status: 500 }
-      )
-    }
-
-    if (!creditCheck?.has_credits) {
-      console.log('[API/CHAT] ❌ AI 크레딧 부족')
-      return NextResponse.json(
-        {
-          error: 'Insufficient AI credits',
-          remaining: creditCheck?.remaining || 0,
-          required: 1
-        },
-        { status: 402 } // 402 Payment Required
-      )
-    }
-
-    console.log(`[API/CHAT] ✅ 크레딧 충분 (잔여: ${creditCheck.remaining})`)
 
     // 마지막 사용자 메시지에서 언어 감지
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop()
@@ -278,32 +241,16 @@ ${hybridContext}
 
     const aiMessage = completion.choices[0]?.message?.content || '답변을 생성하지 못했습니다.'
     const gptDuration = Date.now() - gptStartTime
+    const totalDuration = Date.now() - startTime
 
     console.log(`[API/CHAT] ✅ GPT-4o-mini 응답 완료 (${gptDuration}ms)`)
     console.log(`[API/CHAT] 📊 토큰 사용량 - Input: ${completion.usage?.prompt_tokens}, Output: ${completion.usage?.completion_tokens}, Total: ${completion.usage?.total_tokens}`)
-
-    // 2. AI 크레딧 차감
-    console.log('[API/CHAT] 💳 AI 크레딧 차감 중...')
-    const { data: usageResult, error: usageError } = await supabase.rpc('increment_ai_usage', {
-      p_user_id: userId,
-      p_credits: 1
-    })
-
-    if (usageError) {
-      console.error('[API/CHAT] ⚠️ 크레딧 차감 실패 (응답은 반환):', usageError)
-      // 크레딧 차감 실패해도 AI 응답은 반환 (이미 생성됨)
-    } else {
-      console.log(`[API/CHAT] ✅ 크레딧 차감 완료 (잔여: ${usageResult.remaining})`)
-    }
-
-    const totalDuration = Date.now() - startTime
     console.log(`[API/CHAT] 🎉 전체 처리 완료 (${totalDuration}ms)`)
 
     return NextResponse.json({
       message: aiMessage,
       usage: completion.usage,
-      detectedLanguage: detectedLang,
-      creditsRemaining: usageResult?.remaining || (creditCheck.remaining - 1)
+      detectedLanguage: detectedLang
     })
 
   } catch (error: any) {

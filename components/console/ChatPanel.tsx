@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useChatMessages } from '@/hooks/useChatMessages'
 import ReactMarkdown from 'react-markdown'
 import { useUserUsage } from '@/hooks/useUserUsage'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface ChatPanelProps {
   lectureId: string | null
@@ -13,11 +14,12 @@ interface ChatPanelProps {
 
 export default function ChatPanel({ lectureId }: ChatPanelProps) {
   const { t } = useLanguage()
+  const { user } = useAuth()
   const { messages, loading: loadingMessages, saveMessage } = useChatMessages(lectureId)
   const [inputText, setInputText] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { getRemainingAICredit } = useUserUsage()
+  const { getRemainingAICredit, refetchUsage } = useUserUsage()
 
   // 새 메시지가 추가되면 스크롤을 아래로
   useEffect(() => {
@@ -43,6 +45,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
         },
         body: JSON.stringify({
           lectureId,
+          userId: user?.id,
           messages: [
             ...messages.map(msg => ({
               role: msg.role,
@@ -57,7 +60,14 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to get AI response')
+        const errorData = await response.json()
+
+        if (response.status === 402) {
+          // AI 크레딧 부족
+          throw new Error(`AI 크레딧이 부족합니다. (잔여: ${errorData.remaining || 0})`)
+        }
+
+        throw new Error(errorData.error || 'AI 응답 생성 실패')
       }
 
       const data = await response.json()
@@ -66,9 +76,16 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
       // 3. AI 응답 저장
       await saveMessage('assistant', aiMessage)
 
-    } catch (error) {
+      // 4. 크레딧 정보 업데이트
+      if (data.creditsRemaining !== undefined) {
+        console.log(`남은 AI 크레딧: ${data.creditsRemaining}`)
+        // 사용량 정보 다시 가져오기
+        await refetchUsage()
+      }
+
+    } catch (error: any) {
       console.error('채팅 전송 실패:', error)
-      alert('메시지 전송에 실패했습니다. 다시 시도해주세요.')
+      alert(error.message || '메시지 전송에 실패했습니다. 다시 시도해주세요.')
     } finally {
       setIsGenerating(false)
     }
