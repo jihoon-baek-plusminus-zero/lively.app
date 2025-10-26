@@ -17,11 +17,13 @@ import { useCaptions } from '@/hooks/useCaptions'
 import { useCaptionsList } from '@/hooks/useCaptionsList'
 import { useEmbeddingGenerator } from '@/hooks/useEmbeddingGenerator'
 import { useSummaryGenerator } from '@/hooks/useSummaryGenerator'
+import { useUserUsage } from '@/hooks/useUserUsage'
 import { uploadAudioFile, downloadAudioFile, downloadTranscript } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
 
 export default function ConsolePage() {
   const { user, loading } = useAuth()
+  const { usage, refetchUsage } = useUserUsage()
   const { t } = useLanguage()
   const router = useRouter()
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null)
@@ -42,6 +44,7 @@ export default function ConsolePage() {
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([])
   const [selectedMicId, setSelectedMicId] = useState<string>('')
   const menuRef = useRef<HTMLDivElement>(null)
+  const creditTrackingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false)
@@ -226,6 +229,25 @@ export default function ConsolePage() {
     }
   }, [isActiveRecording, recordingStartTime])
 
+  // 크레딧 추적 cleanup (컴포넌트 unmount 시 interval 정리)
+  useEffect(() => {
+    return () => {
+      if (creditTrackingIntervalRef.current) {
+        clearInterval(creditTrackingIntervalRef.current)
+        creditTrackingIntervalRef.current = null
+      }
+    }
+  }, [])
+
+  // 번역 상태 변경 시 크레딧 추적 재시작 (녹음 중이고 일시정지 상태가 아닐 때만)
+  useEffect(() => {
+    // 녹음 중이고 일시정지가 아닌 경우에만 interval 재시작
+    if (isActiveRecording && !isPaused && creditTrackingIntervalRef.current) {
+      console.log('🔄 번역 상태 변경 감지! 크레딧 추적 재시작 - 새 번역 상태:', translationEnabled)
+      startCreditTracking()
+    }
+  }, [translationEnabled])
+
   // 시간 포맷팅 (HH:MM:SS)
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -392,9 +414,96 @@ export default function ConsolePage() {
     }
   }
 
+  // 크레딧 추적 시작 (1초마다 크레딧 차감)
+  const startCreditTracking = () => {
+    // 기존 interval이 있다면 정리
+    if (creditTrackingIntervalRef.current) {
+      clearInterval(creditTrackingIntervalRef.current)
+    }
+
+    console.log('🎬 크레딧 추적 시작 - 번역 상태:', translationEnabled)
+
+    creditTrackingIntervalRef.current = setInterval(async () => {
+      if (!user) return
+
+      // 번역이 켜져있으면 2초 차감, 아니면 1초 차감
+      const secondsToDeduct = translationEnabled ? 2 : 1
+
+      console.log(`⏱️ 크레딧 차감 중... | 차감량: ${secondsToDeduct}초 | 번역 상태: ${translationEnabled ? 'ON' : 'OFF'}`)
+
+      try {
+        const { data, error } = await supabase.rpc('increment_recording_usage', {
+          p_user_id: user.id,
+          p_seconds: secondsToDeduct
+        })
+
+        if (error) throw error
+
+        // 서버에서 반환된 데이터 확인
+        if (data) {
+          const { remaining_time, total_used, seconds_used } = data
+
+          console.log(`✅ 크레딧 차감 완료 | 이번 차감: ${seconds_used}초 | 총 사용: ${total_used}초 | 남은 크레딧: ${remaining_time}초`)
+
+          // 크레딧 부족 시 자동 정지
+          if (remaining_time <= 0) {
+            console.warn('⚠️ 녹음 크레딧 소진! 자동 정지합니다.')
+            alert('녹음 가능 시간이 모두 소진되었습니다. 녹음을 중지합니다.')
+
+            // 크레딧 추적 중지
+            if (creditTrackingIntervalRef.current) {
+              clearInterval(creditTrackingIntervalRef.current)
+              creditTrackingIntervalRef.current = null
+            }
+
+            // 녹음 중지
+            await handleStopRecording()
+
+            // UI 업데이트
+            await refetchUsage()
+          }
+        }
+      } catch (err) {
+        console.error('❌ 크레딧 차감 실패:', err)
+        // 에러 발생 시에도 크레딧 추적 중지
+        if (creditTrackingIntervalRef.current) {
+          clearInterval(creditTrackingIntervalRef.current)
+          creditTrackingIntervalRef.current = null
+        }
+      }
+    }, 1000) // 1초마다 실행
+  }
+
   const handleStartRecording = async () => {
     if (!selectedLecture) {
       alert(t('console.alert.select.lecture'))
+      return
+    }
+
+    // 녹음 시작 전 크레딧 확인
+    if (!user) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
+    try {
+      // 크레딧 확인: 최소 1초 이상 있어야 녹음 시작 가능
+      const { data: creditCheck, error: creditError } = await supabase.rpc('check_recording_time', {
+        p_user_id: user.id,
+        p_required_seconds: 1
+      })
+
+      if (creditError) throw creditError
+
+      if (!creditCheck || !creditCheck.has_enough_time) {
+        alert('녹음 가능 시간이 부족합니다. 플랜을 업그레이드하거나 다음 주기를 기다려주세요.')
+        return
+      }
+
+      console.log('✅ 크레딧 확인 완료:', creditCheck.remaining_time, '초 남음')
+    } catch (err) {
+      console.error('크레딧 확인 실패:', err)
+      alert('녹음 크레딧을 확인하는 중 오류가 발생했습니다.')
       return
     }
 
@@ -427,12 +536,21 @@ export default function ConsolePage() {
       // 4. 녹음 시작 시간 기록
       setRecordingStartTime(Date.now())
 
+      // 5. 크레딧 추적 시작
+      startCreditTracking()
+
       console.log('🎉 모든 설정 완료! 녹음 시작!')
     } catch (error) {
       console.error('❌ 녹음 시작 실패:', error)
       // 실패 시 정리
       audioRecorder.stopRecording()
       deepgram.disconnect()
+
+      // 크레딧 추적도 중지
+      if (creditTrackingIntervalRef.current) {
+        clearInterval(creditTrackingIntervalRef.current)
+        creditTrackingIntervalRef.current = null
+      }
     }
   }
 
@@ -447,6 +565,11 @@ export default function ConsolePage() {
         audioRecorder.resumeRecording()
         console.log('✅ Deepgram 재연결 및 MediaRecorder 재개 완료')
       }
+
+      // 크레딧 추적 재개
+      console.log('▶️ 크레딧 추적 재개')
+      startCreditTracking()
+
       setIsPaused(false)
     } else {
       // 일시정지: Deepgram 연결 끊기 + MediaRecorder 일시정지
@@ -454,6 +577,14 @@ export default function ConsolePage() {
       deepgram.disconnect()
       audioRecorder.pauseRecording()
       console.log('✅ Deepgram 연결 해제 및 MediaRecorder 일시정지 완료')
+
+      // 크레딧 추적 일시정지
+      console.log('⏸️ 크레딧 추적 일시정지')
+      if (creditTrackingIntervalRef.current) {
+        clearInterval(creditTrackingIntervalRef.current)
+        creditTrackingIntervalRef.current = null
+      }
+
       setIsPaused(true)
     }
   }
@@ -464,8 +595,86 @@ export default function ConsolePage() {
 
     setIsSavingAudio(true)
 
+    // 크레딧 추적 중지
+    if (creditTrackingIntervalRef.current) {
+      clearInterval(creditTrackingIntervalRef.current)
+      creditTrackingIntervalRef.current = null
+    }
+
     try {
       console.log('🛑 녹음 종료 프로세스 시작...')
+
+      // 0. 녹음 종료 전 아직 저장되지 않은 임시 자막(isFinal = false) 저장
+      const pendingCaptions = deepgram.captions.filter(c => !c.isFinal && !processedCaptionIds.has(c.id))
+
+      if (pendingCaptions.length > 0) {
+        console.log(`📝 저장되지 않은 임시 자막 ${pendingCaptions.length}개 발견, 저장 시작...`)
+
+        for (const caption of pendingCaptions) {
+          // 중복 방지: 이미 처리된 것으로 표시
+          setProcessedCaptionIds(prev => {
+            const newSet = new Set(prev)
+            newSet.add(caption.id)
+            return newSet
+          })
+
+          // 녹음 시작 이후 경과 시간 계산
+          const elapsedSeconds = recordingStartTime > 0
+            ? (Date.now() - recordingStartTime) / 1000
+            : 0
+
+          console.log('💾 임시 자막 저장:', caption.text.substring(0, 30))
+
+          try {
+            let translatedText: string | undefined = undefined
+
+            // 번역이 활성화된 경우 번역 수행
+            if (translationEnabled && translationTargetLang) {
+              console.log('🌐 임시 자막 번역 API 호출:', caption.text.substring(0, 30))
+
+              try {
+                const response = await fetch('/api/translate', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    text: caption.text,
+                    targetLang: translationTargetLang
+                  }),
+                })
+
+                if (response.ok) {
+                  const data = await response.json()
+                  translatedText = data.translatedText
+                  console.log('✅ 임시 자막 번역 완료:', translatedText?.substring(0, 30))
+                } else {
+                  console.warn('⚠️ 임시 자막 번역 API 응답 실패:', response.status)
+                }
+              } catch (error) {
+                console.error('❌ 임시 자막 번역 API 오류:', error)
+              }
+            }
+
+            // 자막과 번역 저장
+            const dbCaptionId = await saveCaption(
+              selectedLecture.id,
+              caption.text,
+              elapsedSeconds,
+              caption.speaker,
+              translatedText
+            )
+
+            if (dbCaptionId) {
+              console.log('✅ 임시 자막 DB 저장 완료:', dbCaptionId, '번역 여부:', !!translatedText)
+            }
+          } catch (error) {
+            console.error('❌ 임시 자막 저장 실패:', error)
+          }
+        }
+
+        console.log('✅ 모든 임시 자막 저장 완료')
+      } else {
+        console.log('✅ 저장할 임시 자막 없음')
+      }
 
       // 1. Deepgram 연결 해제
       deepgram.disconnect()

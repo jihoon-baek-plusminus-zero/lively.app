@@ -152,11 +152,11 @@ export default function ProfilePage() {
                 ) : (
                   <Key className="w-4 h-4" />
                 )}
-                <span>비밀번호 재설정</span>
+                <span>{t('profile.reset.password')}</span>
               </button>
               {resetPasswordSuccess && (
                 <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                  비밀번호 재설정 링크가 이메일로 전송되었습니다.
+                  {t('auth.reset.success')}
                 </p>
               )}
             </div>
@@ -166,7 +166,7 @@ export default function ProfilePage() {
         {/* Usage Information */}
         <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-            내 사용량
+            {t('profile.usage.title')}
           </h2>
 
           {usageLoading ? (
@@ -178,17 +178,17 @@ export default function ProfilePage() {
               {/* Recording Quota Section */}
               <div>
                 <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  녹음 한도:
+                  {t('profile.usage.recording.limit')}
                 </h3>
                 <div className="space-y-2 pl-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">내 녹음 한도:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.my.recording.limit')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {getTotalQuotaTime().hours}시간
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">이번달 녹음 시간:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.this.month.recorded')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {formatTimeHHMMSS(
                         getRecordedTime().hours,
@@ -198,7 +198,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">이번달 잔여 시간:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.this.month.remaining')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {formatTimeHHMMSS(
                         getRemainingRecordingTime().hours,
@@ -213,23 +213,23 @@ export default function ProfilePage() {
               {/* AI Credit Section */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  AI 질문 크레딧:
+                  {t('profile.usage.ai.credit.title')}
                 </h3>
                 <div className="space-y-2 pl-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">내 AI 질문 credit:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.my.ai.credit')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {usage.total_ai_credit}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">이번달 사용한 크레딧:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.this.month.used.credits')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {usage.total_ai_used}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">이번달 잔여 크레딧:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.this.month.remaining.credits')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {getRemainingAICredit()}
                     </span>
@@ -328,17 +328,17 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-red-200 dark:border-red-800 p-6 mt-6">
           <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
             <Trash2 className="w-5 h-5" />
-            회원 탈퇴
+            {t('profile.delete.account')}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
+            {t('profile.delete.account.warning')}
           </p>
           <button
             onClick={() => setShowDeleteModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all"
           >
             <Trash2 className="w-4 h-4" />
-            <span>회원 탈퇴</span>
+            <span>{t('profile.delete.account')}</span>
           </button>
         </div>
       </main>
@@ -388,7 +388,7 @@ export default function ProfilePage() {
                     <span>탈퇴 중...</span>
                   </>
                 ) : (
-                  <span>회원 탈퇴</span>
+                  <span>{t('profile.delete.account')}</span>
                 )}
               </button>
             </div>

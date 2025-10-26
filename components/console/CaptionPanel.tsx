@@ -314,11 +314,11 @@ export default function CaptionPanel({
 
                   {translationEnabled && (
                     <div className="px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                      {translationTargetLang === 'en' && 'English'}
-                      {translationTargetLang === 'ko' && '한국어'}
-                      {translationTargetLang === 'ja' && '日本語'}
-                      {translationTargetLang === 'zh' && '中文'}
-                      {translationTargetLang === 'es' && 'Español'}
+                      {translationTargetLang === 'en' && t('language.name.en')}
+                      {translationTargetLang === 'ko' && t('language.name.ko')}
+                      {translationTargetLang === 'ja' && t('language.name.ja')}
+                      {translationTargetLang === 'zh' && t('language.name.zh')}
+                      {translationTargetLang === 'es' && t('language.name.es')}
                     </div>
                   )}
                 </div>

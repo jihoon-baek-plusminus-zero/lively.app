@@ -1452,4 +1452,145 @@ export const translations = {
     zh: '西班牙语',
     es: 'Español',
   },
+
+  // Usage & Credits
+  'usage.remaining.time': {
+    ko: '남음',
+    en: 'remaining',
+    ja: '残り',
+    zh: '剩余',
+    es: 'restante',
+  },
+  'usage.hours': {
+    ko: '시간',
+    en: 'hours',
+    ja: '時間',
+    zh: '小时',
+    es: 'horas',
+  },
+  'usage.minutes': {
+    ko: '분',
+    en: 'minutes',
+    ja: '分',
+    zh: '分钟',
+    es: 'minutos',
+  },
+  'usage.seconds': {
+    ko: '초',
+    en: 'seconds',
+    ja: '秒',
+    zh: '秒',
+    es: 'segundos',
+  },
+
+  // Profile Page - Usage Section
+  'profile.usage.title': {
+    ko: '내 사용량',
+    en: 'My Usage',
+    ja: '私の使用量',
+    zh: '我的使用情况',
+    es: 'Mi uso',
+  },
+  'profile.usage.recording.limit': {
+    ko: '녹음 한도:',
+    en: 'Recording Limit:',
+    ja: '録音制限：',
+    zh: '录音限额：',
+    es: 'Límite de grabación:',
+  },
+  'profile.usage.my.recording.limit': {
+    ko: '내 녹음 한도:',
+    en: 'My Recording Limit:',
+    ja: '私の録音制限：',
+    zh: '我的录音限额：',
+    es: 'Mi límite de grabación:',
+  },
+  'profile.usage.this.month.recorded': {
+    ko: '이번달 녹음 시간:',
+    en: 'This Month Recorded:',
+    ja: '今月の録音時間：',
+    zh: '本月录音时间：',
+    es: 'Grabado este mes:',
+  },
+  'profile.usage.this.month.remaining': {
+    ko: '이번달 잔여 시간:',
+    en: 'This Month Remaining:',
+    zh: '本月剩余时间：',
+    ja: '今月の残り時間：',
+    es: 'Restante este mes:',
+  },
+  'profile.usage.ai.credit.title': {
+    ko: 'AI 질문 크레딧:',
+    en: 'AI Question Credits:',
+    ja: 'AI質問クレジット：',
+    zh: 'AI提问积分：',
+    es: 'Créditos de preguntas IA:',
+  },
+  'profile.usage.my.ai.credit': {
+    ko: '내 AI 질문 credit:',
+    en: 'My AI Question Credits:',
+    ja: '私のAI質問クレジット：',
+    zh: '我的AI提问积分：',
+    es: 'Mis créditos de preguntas IA:',
+  },
+  'profile.usage.this.month.used.credits': {
+    ko: '이번달 사용한 크레딧:',
+    en: 'This Month Used Credits:',
+    ja: '今月使用したクレジット：',
+    zh: '本月已用积分：',
+    es: 'Créditos usados este mes:',
+  },
+  'profile.usage.this.month.remaining.credits': {
+    ko: '이번달 잔여 크레딧:',
+    en: 'This Month Remaining Credits:',
+    ja: '今月の残りクレジット：',
+    zh: '本月剩余积分：',
+    es: 'Créditos restantes este mes:',
+  },
+
+  // Profile Page - Account Section
+  'profile.reset.password': {
+    ko: '비밀번호 재설정',
+    en: 'Reset Password',
+    ja: 'パスワードリセット',
+    zh: '重置密码',
+    es: 'Restablecer contraseña',
+  },
+  'profile.delete.account': {
+    ko: '회원 탈퇴',
+    en: 'Delete Account',
+    ja: 'アカウント削除',
+    zh: '删除账户',
+    es: 'Eliminar cuenta',
+  },
+  'profile.delete.account.warning': {
+    ko: '계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.',
+    en: 'Deleting your account will permanently delete all data and cannot be recovered.',
+    ja: 'アカウントを削除すると、すべてのデータが永久に削除され、復元できません。',
+    zh: '删除账户将永久删除所有数据且无法恢复。',
+    es: 'Eliminar tu cuenta borrará permanentemente todos los datos y no se podrá recuperar.',
+  },
+  'profile.delete.account.button': {
+    ko: '회원 탈퇴',
+    en: 'Delete Account',
+    ja: 'アカウント削除',
+    zh: '删除账户',
+    es: 'Eliminar cuenta',
+  },
+
+  // Sidebar
+  'sidebar.settings': {
+    ko: '설정',
+    en: 'Settings',
+    ja: '設定',
+    zh: '设置',
+    es: 'Configuración',
+  },
+  'sidebar.feedback': {
+    ko: '피드백 / 문의',
+    en: 'Feedback / Report',
+    ja: 'フィードバック / お問い合わせ',
+    zh: '反馈 / 报告',
+    es: 'Comentarios / Reportar',
+  },
 } as const

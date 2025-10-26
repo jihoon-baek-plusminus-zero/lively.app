@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Plus, Clock, ChevronRight, Mic, LogOut, Loader2, MoreVertical, Edit2, Trash2, User, ChevronLeft, ArrowRight } from 'lucide-react'
+import { Plus, Clock, ChevronRight, Mic, LogOut, Loader2, MoreVertical, Edit2, Trash2, User, ChevronLeft, ArrowRight, Settings, MessageSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLectures, type Lecture } from '@/hooks/useLectures'
-import { ThemeToggle } from '@/components/ThemeToggle'
 import { LanguageSelector } from '@/components/LanguageSelector'
 import { useLanguage } from '@/contexts/LanguageContext'
 import Image from 'next/image'
@@ -80,9 +79,9 @@ export default function Sidebar({
   const getRemainingTimeDisplay = () => {
     const { hours, minutes } = getRemainingRecordingTime()
     if (hours >= 1) {
-      return `${hours}시간 남음`
+      return `${hours}${t('usage.hours')} ${t('usage.remaining.time')}`
     } else {
-      return `${minutes}분 남음`
+      return `${minutes}${t('usage.minutes')} ${t('usage.remaining.time')}`
     }
   }
 
@@ -308,8 +307,16 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Theme Toggle */}
-      <ThemeToggle />
+      {/* Feedback Button */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-[#F9F9F9] dark:bg-[#181818]">
+        <button
+          onClick={() => window.open('https://liveyapp.featurebase.app', '_blank')}
+          className="w-full py-2.5 px-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700"
+        >
+          <MessageSquare className="w-4 h-4" />
+          {t('sidebar.feedback')}
+        </button>
+      </div>
 
       {/* User Profile */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-[#F9F9F9] dark:bg-[#181818]">
@@ -340,8 +347,8 @@ export default function Sidebar({
             onClick={() => router.push('/profile')}
             className="flex-1 py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
-            <User className="w-4 h-4" />
-            {t('sidebar.my.profile')}
+            <Settings className="w-4 h-4" />
+            {t('sidebar.settings')}
           </button>
         </div>
       </div>
