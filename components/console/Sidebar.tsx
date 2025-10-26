@@ -78,11 +78,8 @@ export default function Sidebar({
 
   const getRemainingTimeDisplay = () => {
     const { hours, minutes } = getRemainingRecordingTime()
-    if (hours >= 1) {
-      return `${hours}${t('usage.hours')} ${t('usage.remaining.time')}`
-    } else {
-      return `${minutes}${t('usage.minutes')} ${t('usage.remaining.time')}`
-    }
+    const totalMinutes = hours * 60 + minutes
+    return `${totalMinutes} ${t('usage.minutes')} ${t('usage.remaining.time')}`
   }
 
   // 메뉴 외부 클릭 감지
@@ -314,7 +311,7 @@ export default function Sidebar({
           className="w-full py-2.5 px-4 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700"
         >
           <MessageSquare className="w-4 h-4" />
-          {t('sidebar.feedback')}
+          Feedback / Support
         </button>
       </div>
 
