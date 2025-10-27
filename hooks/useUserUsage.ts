@@ -6,10 +6,12 @@ export interface UserUsage {
   id: string
   user_id: string
   signed_up_date: string
-  total_recordable_time: number // seconds
-  total_recorded_time: number // seconds
-  total_ai_credit: number
-  total_ai_used: number
+  total_recordable_time: number // seconds - monthly subscription quota
+  total_recorded_time: number // seconds - usage this month
+  total_ai_credit: number // monthly subscription quota
+  total_ai_used: number // usage this month
+  purchased_recording_time: number // seconds - one-time purchased credits
+  purchased_ai_credit: number // one-time purchased credits
   current_period_start: string
   created_at: string
   updated_at: string
@@ -74,6 +76,8 @@ export function useUserUsage() {
           total_recorded_time: 0,
           total_ai_credit: 1000,
           total_ai_used: 0,
+          purchased_recording_time: 0,
+          purchased_ai_credit: 0,
           current_period_start: new Date().toISOString(),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -122,6 +126,44 @@ export function useUserUsage() {
     return Math.max(0, usage.total_ai_credit - usage.total_ai_used)
   }
 
+  // Get purchased recording time (in hours, minutes, seconds)
+  const getPurchasedRecordingTime = () => {
+    if (!usage) return { hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 }
+    const totalSeconds = usage.purchased_recording_time || 0
+    return {
+      hours: Math.floor(totalSeconds / 3600),
+      minutes: Math.floor((totalSeconds % 3600) / 60),
+      seconds: totalSeconds % 60,
+      totalSeconds,
+    }
+  }
+
+  // Get purchased AI credits
+  const getPurchasedAICredit = () => {
+    if (!usage) return 0
+    return usage.purchased_ai_credit || 0
+  }
+
+  // Get total remaining recording time (monthly + purchased)
+  const getTotalRemainingRecordingTime = () => {
+    const monthly = getRemainingRecordingTime()
+    const purchased = getPurchasedRecordingTime()
+    const totalSeconds = monthly.totalSeconds + purchased.totalSeconds
+    return {
+      hours: Math.floor(totalSeconds / 3600),
+      minutes: Math.floor((totalSeconds % 3600) / 60),
+      seconds: totalSeconds % 60,
+      totalSeconds,
+    }
+  }
+
+  // Get total remaining AI credits (monthly + purchased)
+  const getTotalRemainingAICredit = () => {
+    const monthly = getRemainingAICredit()
+    const purchased = getPurchasedAICredit()
+    return monthly + purchased
+  }
+
   return {
     usage,
     loading,
@@ -130,6 +172,10 @@ export function useUserUsage() {
     getRecordedTime,
     getTotalQuotaTime,
     getRemainingAICredit,
+    getPurchasedRecordingTime,
+    getPurchasedAICredit,
+    getTotalRemainingRecordingTime,
+    getTotalRemainingAICredit,
     refetchUsage: fetchUsage,
   }
 }

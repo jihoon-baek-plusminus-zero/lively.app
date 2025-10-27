@@ -36,7 +36,7 @@ export default function Sidebar({
   const [editingTitle, setEditingTitle] = useState('')
   const [showLanguageModal, setShowLanguageModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const { getRemainingRecordingTime } = useUserUsage()
+  const { getTotalRemainingRecordingTime } = useUserUsage()
 
   const handleLogout = async () => {
     await signOut()
@@ -77,7 +77,8 @@ export default function Sidebar({
   }
 
   const getRemainingTimeDisplay = () => {
-    const { hours, minutes } = getRemainingRecordingTime()
+    // Display total remaining time (monthly + purchased)
+    const { hours, minutes } = getTotalRemainingRecordingTime()
     const totalMinutes = hours * 60 + minutes
     return `${totalMinutes} ${t('usage.minutes')} ${t('usage.remaining.time')}`
   }
