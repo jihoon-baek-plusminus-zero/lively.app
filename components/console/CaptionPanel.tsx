@@ -277,8 +277,8 @@ export default function CaptionPanel({
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#212121]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Mic className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            <Mic className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 hidden lg:inline">
               {isRecording ? t('caption.panel.realtime') : t('caption.panel.record')}
             </h2>
           </div>

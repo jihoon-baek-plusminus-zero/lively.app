@@ -1167,16 +1167,6 @@ export default function ConsolePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8">
-                  <Image
-                    src="/icon.png"
-                    alt="Livey Icon"
-                    width={32}
-                    height={32}
-                    className="w-full h-full"
-                  />
-                </div>
-
                 {/* 제목 (편집 모드 / 일반 모드) */}
                 {isEditingTitle && selectedLecture ? (
                   <div className="flex items-center gap-2">
@@ -1277,8 +1267,8 @@ export default function ConsolePage() {
                   disabled={!selectedLecture || audioRecorder.isRecording || deepgram.isConnected}
                   className="px-4 py-2 bg-primary dark:bg-[#3B82F6] hover:bg-primary-600 dark:hover:bg-blue-500 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Play className="w-4 h-4" />
-                  {t('console.button.start.recording')}
+                  <Play className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden lg:inline whitespace-nowrap">{t('console.button.start.recording')}</span>
                 </button>
               )}
 

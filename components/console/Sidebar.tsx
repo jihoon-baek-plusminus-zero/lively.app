@@ -125,16 +125,29 @@ export default function Sidebar({
 
   return (
     <aside className={`${isCollapsed ? 'w-16' : 'w-80'} bg-[#F9F9F9] dark:bg-[#181818] border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out`}>
-      {/* Collapsed State - Show only expand button */}
+      {/* Collapsed State - Show only icon and expand button */}
       {isCollapsed ? (
-        <div className="flex-1 flex items-center justify-center">
-          <button
-            onClick={onToggleCollapse}
-            className="p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            title="Expand sidebar"
-          >
-            <ArrowRight className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-          </button>
+        <div className="flex-1 flex flex-col">
+          {/* Icon at top */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center">
+            <Image
+              src="/livey_icon.png"
+              alt="Livey"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
+          </div>
+          {/* Expand button in center */}
+          <div className="flex-1 flex items-center justify-center">
+            <button
+              onClick={onToggleCollapse}
+              className="p-3 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="Expand sidebar"
+            >
+              <ArrowRight className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
         </div>
       ) : (
         <>
