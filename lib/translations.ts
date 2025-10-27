@@ -65,11 +65,11 @@ export const translations = {
     es: 'Subtítulos en tiempo real',
   },
   'feature.realtime.desc': {
-    ko: 'Deepgram AI가 강의 내용을 실시간으로 텍스트로 변환',
-    en: 'Deepgram AI converts lecture content to text in real-time',
-    ja: 'Deepgram AIが講義内容をリアルタイムでテキストに変換',
-    zh: 'Deepgram AI实时将讲座内容转换为文字',
-    es: 'Deepgram AI convierte el contenido de la conferencia a texto en tiempo real',
+    ko: 'AI가 강의 내용을 실시간으로 텍스트로 변환',
+    en: 'AI converts lecture content to text in real-time',
+    ja: 'AIが講義内容をリアルタイムでテキストに変換',
+    zh: 'AI实时将讲座内容转换为文字',
+    es: 'AI convierte el contenido de la conferencia a texto en tiempo real',
   },
   'feature.ai.title': {
     ko: 'AI 학습 도우미',
@@ -79,11 +79,11 @@ export const translations = {
     es: 'Asistente de aprendizaje con IA',
   },
   'feature.ai.desc': {
-    ko: 'Claude AI가 강의 내용을 바탕으로 질문에 답변',
-    en: 'Claude AI answers questions based on lecture content',
-    ja: 'Claude AIが講義内容に基づいて質問に回答',
-    zh: 'Claude AI根据讲座内容回答问题',
-    es: 'Claude AI responde preguntas basándose en el contenido de la conferencia',
+    ko: 'AI가 강의 내용을 바탕으로 질문에 답변',
+    en: 'AI answers questions based on lecture content',
+    ja: 'AIが講義内容に基づいて質問に回答',
+    zh: 'AI根据讲座内容回答问题',
+    es: 'AI responde preguntas basándose en el contenido de la conferencia',
   },
   'feature.translation.title': {
     ko: '다국어 번역',

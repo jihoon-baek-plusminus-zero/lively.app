@@ -115,16 +115,63 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
               {t('home.demo.title')}
             </h2>
-            <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-primary dark:bg-[#3B82F6] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mic className="w-10 h-10 text-white" />
+            <div className="aspect-video bg-gray-900 dark:bg-black rounded-xl overflow-hidden border border-gray-700">
+              {/* Mock Console UI */}
+              <div className="h-full flex">
+                {/* Left Panel - Captions */}
+                <div className="flex-1 bg-gray-900 p-6 overflow-hidden">
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-700">
+                    <Mic className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-white font-semibold">기록</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <p className="text-sm text-gray-400 mb-1">00:24:53</p>
+                      <p className="text-white">So I just give you a full credit tool.</p>
+                      <p className="text-gray-400 text-sm italic mt-1">그래서 전액 크레딧 도구를 제공합니다.</p>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <p className="text-sm text-gray-400 mb-1">00:24:57</p>
+                      <p className="text-white">And, the result,</p>
+                      <p className="text-gray-400 text-sm italic mt-1">그리고 그 결과,</p>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <p className="text-sm text-gray-400 mb-1">00:25:01</p>
+                      <p className="text-white">actually mean is, 15 tooth 50 tooth. And</p>
+                      <p className="text-gray-400 text-sm italic mt-1">실제로는 15 치아 50 치아라는 뜻입니다. 그리고</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  {t('home.demo.description')}
-                </p>
+
+                {/* Right Panel - AI Chat */}
+                <div className="flex-1 bg-gray-850 dark:bg-gray-900 p-6 border-l border-gray-700">
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-700">
+                    <MessageSquare className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-white font-semibold">AI 채팅</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <div className="bg-blue-600 rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
+                        <p className="text-white text-sm">I think I just</p>
+                        <p className="text-white text-sm">제 생각에는</p>
+                        <p className="text-xs text-blue-200 mt-2">00:25:09</p>
+                      </div>
+                    </div>
+                    <div className="flex justify-start">
+                      <div className="bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%]">
+                        <p className="text-white text-sm">
+                          해당 부분에서는 어떤 수치의 평균을 구하고자 하는 내용인 것 같습니다. "15 치아 50 치아"라는 표현을 통해...
+                        </p>
+                        <p className="text-xs text-gray-400 mt-2">오후 06:02</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+            <p className="text-center text-gray-500 dark:text-gray-400 text-sm mt-4">
+              {t('home.demo.description')}
+            </p>
           </div>
         </div>
       </main>
