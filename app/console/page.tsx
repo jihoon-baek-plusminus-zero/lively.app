@@ -51,6 +51,9 @@ export default function ConsolePage() {
   const [showMobileDetail, setShowMobileDetail] = useState(false)
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false)
 
+  // Fullscreen mode state
+  const [isFullscreenMode, setIsFullscreenMode] = useState(false)
+
   // Hooks
   const audioRecorder = useAudioRecorder()
   const deepgram = useDeepgram()
@@ -912,9 +915,10 @@ export default function ConsolePage() {
                   <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </button>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {/* 전체화면 모드에서는 livey_icon.png, 아니면 icon.png */}
                   <div className="w-6 h-6 flex-shrink-0">
                     <Image
-                      src="/icon.png"
+                      src={isFullscreenMode ? "/livey_icon.png" : "/icon.png"}
                       alt="Livey Icon"
                       width={24}
                       height={24}
@@ -1122,7 +1126,7 @@ export default function ConsolePage() {
 
             {/* Mobile Vertical Stack - CaptionPanel (top) + ChatPanel (bottom) */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="h-[50%] min-h-0 overflow-hidden">
+              <div className={isFullscreenMode ? "h-full overflow-hidden" : "h-[50%] min-h-0 overflow-hidden"}>
                 <CaptionPanel
                   isRecording={isActiveRecording}
                   isCompleted={isCompleted}
@@ -1135,11 +1139,15 @@ export default function ConsolePage() {
                   onTranslationComplete={isCompleted ? undefined : handleTranslationComplete}
                   onBulkTranslationComplete={handleBulkTranslationComplete}
                   realTimeTranslations={realTimeTranslations}
+                  isFullscreenMode={isFullscreenMode}
+                  onToggleFullscreen={() => setIsFullscreenMode(!isFullscreenMode)}
                 />
               </div>
-              <div className="h-[50%] min-h-0 overflow-hidden border-t border-gray-200 dark:border-gray-700">
-                <ChatPanel lectureId={selectedLecture.id} />
-              </div>
+              {!isFullscreenMode && (
+                <div className="h-[50%] min-h-0 overflow-hidden border-t border-gray-200 dark:border-gray-700">
+                  <ChatPanel lectureId={selectedLecture.id} />
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -1155,14 +1163,16 @@ export default function ConsolePage() {
       ) : (
         /* Desktop Layout */
         <>
-          {/* Left Sidebar - 강의 리스트 */}
-          <Sidebar
-            selectedLectureId={selectedLecture?.id || null}
-            onSelectLecture={handleSelectLecture}
-            onCreateLecture={handleCreateLecture}
-            isCollapsed={isDesktopSidebarCollapsed}
-            onToggleCollapse={() => setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed)}
-          />
+          {/* Left Sidebar - 강의 리스트 (전체화면 모드에서는 숨김) */}
+          {!isFullscreenMode && (
+            <Sidebar
+              selectedLectureId={selectedLecture?.id || null}
+              onSelectLecture={handleSelectLecture}
+              onCreateLecture={handleCreateLecture}
+              isCollapsed={isDesktopSidebarCollapsed}
+              onToggleCollapse={() => setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed)}
+            />
+          )}
 
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
@@ -1171,6 +1181,19 @@ export default function ConsolePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
+                {/* 전체화면 모드에서 livey_icon.png 표시 */}
+                {isFullscreenMode && (
+                  <div className="w-8 h-8 flex-shrink-0">
+                    <Image
+                      src="/livey_icon.png"
+                      alt="Livey"
+                      width={32}
+                      height={32}
+                      className="w-full h-full"
+                    />
+                  </div>
+                )}
+
                 {/* 제목 (편집 모드 / 일반 모드) */}
                 {isEditingTitle && selectedLecture ? (
                   <div className="flex items-center gap-2">
@@ -1417,10 +1440,12 @@ export default function ConsolePage() {
                 onTranslationComplete={isCompleted ? undefined : handleTranslationComplete}
                 onBulkTranslationComplete={handleBulkTranslationComplete}
                 realTimeTranslations={realTimeTranslations}
+                isFullscreenMode={isFullscreenMode}
+                onToggleFullscreen={() => setIsFullscreenMode(!isFullscreenMode)}
               />
 
-              {/* Right Pane - 채팅 */}
-              <ChatPanel lectureId={selectedLecture?.id || null} />
+              {/* Right Pane - 채팅 (전체화면 모드에서는 숨김) */}
+              {!isFullscreenMode && <ChatPanel lectureId={selectedLecture?.id || null} />}
             </>
           ) : (
             /* Welcome Screen - No lecture selected */

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Languages, Mic } from 'lucide-react'
+import { Languages, Mic, Maximize2, Minimize2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Caption {
@@ -35,6 +35,8 @@ interface CaptionPanelProps {
   onTranslationComplete?: (captionId: string, translatedText: string) => void
   onBulkTranslationComplete?: (translations: Record<string, string>) => void
   realTimeTranslations?: Record<string, string>
+  isFullscreenMode?: boolean
+  onToggleFullscreen?: () => void
 }
 
 export default function CaptionPanel({
@@ -48,7 +50,9 @@ export default function CaptionPanel({
   onTranslationTargetChange,
   onTranslationComplete,
   onBulkTranslationComplete,
-  realTimeTranslations = {}
+  realTimeTranslations = {},
+  isFullscreenMode = false,
+  onToggleFullscreen
 }: CaptionPanelProps) {
   const { t } = useLanguage()
   const [autoScroll, setAutoScroll] = useState(true)
@@ -284,6 +288,21 @@ export default function CaptionPanel({
           </div>
 
           <div className="flex items-center gap-3">
+            {/* 전체화면 버튼 - 녹음 중일 때만 표시 */}
+            {isRecording && onToggleFullscreen && (
+              <button
+                onClick={onToggleFullscreen}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                title={isFullscreenMode ? '전체화면 종료' : '전체화면'}
+              >
+                {isFullscreenMode ? (
+                  <Minimize2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                ) : (
+                  <Maximize2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                )}
+              </button>
+            )}
+
             {/* 완료된 강의에서는 번역 UI 숨김 */}
             {!isCompleted && (
               <>
