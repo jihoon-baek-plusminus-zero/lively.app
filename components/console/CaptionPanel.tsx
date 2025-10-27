@@ -288,18 +288,14 @@ export default function CaptionPanel({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* 전체화면 버튼 - 녹음 중일 때만 표시 */}
-            {isRecording && onToggleFullscreen && (
+            {/* 전체화면 버튼 - 녹음 중일 때만 표시 (전체화면 모드가 아닐 때만) */}
+            {isRecording && onToggleFullscreen && !isFullscreenMode && (
               <button
                 onClick={onToggleFullscreen}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                title={isFullscreenMode ? '전체화면 종료' : '전체화면'}
+                title="전체화면"
               >
-                {isFullscreenMode ? (
-                  <Minimize2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                ) : (
-                  <Maximize2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                )}
+                <Maximize2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
             )}
 
@@ -474,6 +470,17 @@ export default function CaptionPanel({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Fullscreen Exit Button - 전체화면 모드일 때만 표시 */}
+      {isFullscreenMode && onToggleFullscreen && (
+        <button
+          onClick={onToggleFullscreen}
+          className="fixed top-4 right-4 z-50 p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full shadow-lg transition-all"
+          title="전체화면 종료"
+        >
+          <Minimize2 className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+        </button>
       )}
 
     </div>

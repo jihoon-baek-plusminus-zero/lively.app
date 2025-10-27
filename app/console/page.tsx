@@ -905,7 +905,8 @@ export default function ConsolePage() {
         showMobileDetail && selectedLecture ? (
           /* Mobile Detail View - Fullscreen with back button */
           <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
-            {/* Mobile Header with Back Button */}
+            {/* Mobile Header with Back Button (전체화면 모드에서는 숨김) */}
+            {!isFullscreenMode && (
             <header className="bg-white dark:bg-[#202020] border-b border-gray-200 dark:border-gray-700 px-4 py-3">
               <div className="flex items-center gap-3 mb-3">
                 <button
@@ -1123,6 +1124,7 @@ export default function ConsolePage() {
                 </div>
               )}
             </header>
+            )}
 
             {/* Mobile Vertical Stack - CaptionPanel (top) + ChatPanel (bottom) */}
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -1176,7 +1178,8 @@ export default function ConsolePage() {
 
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
-        {/* Top Header */}
+        {/* Top Header (전체화면 모드에서는 숨김) */}
+        {!isFullscreenMode && (
         <header className="bg-white dark:bg-[#202020] border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -1422,6 +1425,7 @@ export default function ConsolePage() {
             </div>
           )}
         </header>
+        )}
 
         {/* Main 2-Pane Layout */}
         <div className="flex-1 flex overflow-hidden">
