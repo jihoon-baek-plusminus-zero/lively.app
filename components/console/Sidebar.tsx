@@ -124,7 +124,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className={`${isCollapsed ? 'w-16' : 'w-80'} bg-[#F9F9F9] dark:bg-[#181818] border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out`}>
+    <aside className={`${isCollapsed ? 'w-16' : 'w-full md:w-80'} h-full bg-[#F9F9F9] dark:bg-[#181818] border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out`}>
       {/* Collapsed State - Show only icon and expand button */}
       {isCollapsed ? (
         <div className="flex-1 flex flex-col">
