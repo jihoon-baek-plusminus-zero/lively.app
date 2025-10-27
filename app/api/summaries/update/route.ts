@@ -1,4 +1,5 @@
 // ================================================================
+import { logger } from '@/lib/logger'
 // 강의 요약 업데이트 API
 // ================================================================
 // 100개의 새로운 캡션마다 요약을 생성/업데이트합니다
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    console.log(`\n[SUMMARY] 📝 강의 ${lectureId.substring(0, 8)} 요약 업데이트 시작`)
+    logger.log(`\n[SUMMARY] 📝 강의 ${lectureId.substring(0, 8)} 요약 업데이트 시작`)
 
     // 1. 기존 요약 가져오기
     const { data: existingSummary } = await supabase
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .single()
 
-    console.log(`[SUMMARY] 기존 요약: ${existingSummary ? '있음' : '없음'}`)
+    logger.log(`[SUMMARY] 기존 요약: ${existingSummary ? '있음' : '없음'}`)
 
     // 2. 마지막 요약 이후의 캡션 개수 확인
     let newCaptionsQuery = supabase
@@ -66,11 +67,11 @@ export async function POST(req: NextRequest) {
     if (captionsError) throw captionsError
 
     const newCaptionCount = newCaptions?.length || 0
-    console.log(`[SUMMARY] 새로운 캡션 개수: ${newCaptionCount}개`)
+    logger.log(`[SUMMARY] 새로운 캡션 개수: ${newCaptionCount}개`)
 
     // 3. 100개 미만이면 업데이트 불필요
     if (newCaptionCount < 100) {
-      console.log(`[SUMMARY] ⏸️  100개 미만이므로 업데이트 생략 (${newCaptionCount}/100)`)
+      logger.log(`[SUMMARY] ⏸️  100개 미만이므로 업데이트 생략 (${newCaptionCount}/100)`)
       return NextResponse.json({
         message: 'Not enough new captions',
         newCaptionCount,
@@ -107,7 +108,7 @@ ${captionsText}
 위 내용을 요약해주세요. 핵심 내용과 주요 포인트를 포함해주세요.`
     }
 
-    console.log(`[SUMMARY] 🤖 GPT-4o-mini 요약 생성 중...`)
+    logger.log(`[SUMMARY] 🤖 GPT-4o-mini 요약 생성 중...`)
     const startTime = Date.now()
 
     const completion = await openai.chat.completions.create({
@@ -129,8 +130,8 @@ ${captionsText}
     const summary = completion.choices[0].message.content || ''
     const elapsedMs = Date.now() - startTime
 
-    console.log(`[SUMMARY] ✅ 요약 생성 완료 (${elapsedMs}ms)`)
-    console.log(`[SUMMARY] 요약 길이: ${summary.length}자`)
+    logger.log(`[SUMMARY] ✅ 요약 생성 완료 (${elapsedMs}ms)`)
+    logger.log(`[SUMMARY] 요약 길이: ${summary.length}자`)
 
     // 5. 데이터베이스에 저장/업데이트
     const lastCaptionId = newCaptions[newCaptions.length - 1].id
@@ -149,7 +150,7 @@ ${captionsText}
         .eq('id', existingSummary.id)
 
       if (updateError) throw updateError
-      console.log(`[SUMMARY] 💾 기존 요약 업데이트 완료 (총 ${totalCaptionCount}개 캡션)`)
+      logger.log(`[SUMMARY] 💾 기존 요약 업데이트 완료 (총 ${totalCaptionCount}개 캡션)`)
     } else {
       // 새로 생성
       const { error: insertError } = await supabase
@@ -162,7 +163,7 @@ ${captionsText}
         })
 
       if (insertError) throw insertError
-      console.log(`[SUMMARY] 💾 새 요약 생성 완료 (${totalCaptionCount}개 캡션)`)
+      logger.log(`[SUMMARY] 💾 새 요약 생성 완료 (${totalCaptionCount}개 캡션)`)
     }
 
     return NextResponse.json({
@@ -173,7 +174,7 @@ ${captionsText}
       processingTimeMs: elapsedMs,
     })
   } catch (error: any) {
-    console.error('[SUMMARY] ❌ 오류:', error)
+    logger.error('[SUMMARY] ❌ 오류:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to update summary' },
       { status: 500 }

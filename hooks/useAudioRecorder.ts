@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
+import { logger } from '@/lib/logger'
 
 export interface UseAudioRecorderReturn {
   isRecording: boolean
@@ -22,7 +23,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       setError(null)
       audioChunksRef.current = [] // 녹음 청크 초기화
 
-      console.log('🎤 마이크 권한 요청...', deviceId ? `Device: ${deviceId}` : 'Default device')
+      logger.log('🎤 마이크 권한 요청...', deviceId ? `Device: ${deviceId}` : 'Default device')
 
       // 마이크 권한 요청
       const audioConstraints: MediaTrackConstraints = {
@@ -60,11 +61,11 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
 
       setIsRecording(true)
 
-      console.log('✅ 오디오 스트림 획득 성공:', stream.id)
-      console.log('🎙️ MediaRecorder 녹음 시작')
+      logger.log('✅ 오디오 스트림 획득 성공:', stream.id)
+      logger.log('🎙️ MediaRecorder 녹음 시작')
       return stream
     } catch (err: any) {
-      console.error('❌ 마이크 접근 오류:', err)
+      logger.error('❌ 마이크 접근 오류:', err)
       setError(
         err.name === 'NotAllowedError'
           ? '마이크 권한이 거부되었습니다. 브라우저 설정에서 마이크 권한을 허용해주세요.'
@@ -77,14 +78,14 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.pause()
-      console.log('⏸️ MediaRecorder 일시정지')
+      logger.log('⏸️ MediaRecorder 일시정지')
     }
   }, [])
 
   const resumeRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
       mediaRecorderRef.current.resume()
-      console.log('▶️ MediaRecorder 재개')
+      logger.log('▶️ MediaRecorder 재개')
     }
   }, [])
 
@@ -93,7 +94,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.onstop = () => {
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-          console.log('💾 오디오 Blob 생성:', audioBlob.size, 'bytes')
+          logger.log('💾 오디오 Blob 생성:', audioBlob.size, 'bytes')
 
           // 스트림 정리
           if (audioStreamRef.current) {
@@ -104,7 +105,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
           mediaRecorderRef.current = null
           audioChunksRef.current = []
           setIsRecording(false)
-          console.log('🛑 오디오 녹음 중지')
+          logger.log('🛑 오디오 녹음 중지')
 
           resolve(audioBlob)
         }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { logger } from '@/lib/logger'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -27,7 +28,7 @@ export function useAdmin() {
 
     const checkAdminStatus = async () => {
       try {
-        console.log('🔍 Checking admin status for user:', user.id, user.email)
+        logger.log('🔍 Checking admin status for user:', user.id, user.email)
 
         // Check by user_id first
         const { data: dataById, error: errorById } = await supabase
@@ -36,7 +37,7 @@ export function useAdmin() {
           .eq('user_id', user.id)
           .limit(1)
 
-        console.log('📊 Admin query by user_id:', { dataById, errorById })
+        logger.log('📊 Admin query by user_id:', { dataById, errorById })
 
         // If not found by user_id, try by email
         if (!dataById || dataById.length === 0) {
@@ -46,24 +47,24 @@ export function useAdmin() {
             .eq('email', user.email)
             .limit(1)
 
-          console.log('📊 Admin query by email:', { dataByEmail, errorByEmail })
+          logger.log('📊 Admin query by email:', { dataByEmail, errorByEmail })
 
           if (dataByEmail && dataByEmail.length > 0) {
-            console.log('✅ User is admin (by email)! Super admin:', dataByEmail[0].is_super_admin)
+            logger.log('✅ User is admin (by email)! Super admin:', dataByEmail[0].is_super_admin)
             setIsAdmin(true)
             setIsSuperAdmin(dataByEmail[0].is_super_admin)
           } else {
-            console.log('❌ User is not an admin')
+            logger.log('❌ User is not an admin')
             setIsAdmin(false)
             setIsSuperAdmin(false)
           }
         } else {
-          console.log('✅ User is admin (by user_id)! Super admin:', dataById[0].is_super_admin)
+          logger.log('✅ User is admin (by user_id)! Super admin:', dataById[0].is_super_admin)
           setIsAdmin(true)
           setIsSuperAdmin(dataById[0].is_super_admin)
         }
       } catch (err) {
-        console.error('Error checking admin status:', err)
+        logger.error('Error checking admin status:', err)
         setIsAdmin(false)
         setIsSuperAdmin(false)
       } finally {
@@ -94,7 +95,7 @@ export function useAdminUsers() {
 
       setAdminUsers(data || [])
     } catch (err: any) {
-      console.error('Error fetching admin users:', err)
+      logger.error('Error fetching admin users:', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -127,14 +128,14 @@ export function useAdminUsers() {
         { user_email: email }
       )
 
-      console.log('RPC get_user_by_email result:', { userData, rpcError })
+      logger.log('RPC get_user_by_email result:', { userData, rpcError })
 
       let userId = null
       if (userData && userData.length > 0) {
         userId = userData[0].id
       }
 
-      console.log('Inserting admin with user_id:', userId, 'email:', email)
+      logger.log('Inserting admin with user_id:', userId, 'email:', email)
 
       // Insert admin user
       const insertData: any = {
@@ -152,14 +153,14 @@ export function useAdminUsers() {
         .insert(insertData)
 
       if (insertError) {
-        console.error('Insert error:', insertError)
+        logger.error('Insert error:', insertError)
         throw insertError
       }
 
       await fetchAdminUsers()
       return true
     } catch (err: any) {
-      console.error('Error adding admin:', err)
+      logger.error('Error adding admin:', err)
       setError(err.message || 'Failed to add admin')
       return false
     }
@@ -174,7 +175,7 @@ export function useAdminUsers() {
       await fetchAdminUsers()
       return true
     } catch (err: any) {
-      console.error('Error removing admin:', err)
+      logger.error('Error removing admin:', err)
       setError(err.message)
       return false
     }

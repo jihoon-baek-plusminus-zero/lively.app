@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { logger } from '@/lib/logger'
 import { supabase } from '@/lib/supabase'
 
 export function useCaptions() {
@@ -27,10 +28,10 @@ export function useCaptions() {
 
         if (error) throw error
 
-        console.log('✅ 자막 저장 성공:', text.substring(0, 30), translatedText ? '(번역 포함)' : '', 'ID:', data.id)
+        logger.log('✅ 자막 저장 성공:', text.substring(0, 30), translatedText ? '(번역 포함)' : '', 'ID:', data.id)
         return data.id
       } catch (err: any) {
-        console.error('❌ 자막 저장 실패:', err)
+        logger.error('❌ 자막 저장 실패:', err)
         return null
       }
     },
@@ -47,9 +48,9 @@ export function useCaptions() {
           .eq('id', captionId)
 
         if (error) throw error
-        console.log('✅ 번역 DB 업데이트 성공:', captionId.substring(0, 10))
+        logger.log('✅ 번역 DB 업데이트 성공:', captionId.substring(0, 10))
       } catch (err: any) {
-        console.error('❌ 번역 DB 업데이트 실패:', err)
+        logger.error('❌ 번역 DB 업데이트 실패:', err)
       }
     },
     []
@@ -68,7 +69,7 @@ export function useCaptions() {
 
       return data || []
     } catch (err: any) {
-      console.error('자막 가져오기 실패:', err)
+      logger.error('자막 가져오기 실패:', err)
       return []
     }
   }, [])

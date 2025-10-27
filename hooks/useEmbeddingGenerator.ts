@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { logger } from '@/lib/logger'
 
 interface UseEmbeddingGeneratorProps {
   lectureId: string | null
@@ -16,7 +17,7 @@ export function useEmbeddingGenerator({
   const generateEmbeddings = useCallback(async () => {
     if (!lectureId || isGenerating) return
 
-    console.log('[EMBEDDING] 🚀 임베딩 생성 시작...')
+    logger.log('[EMBEDDING] 🚀 임베딩 생성 시작...')
     setIsGenerating(true)
     const startTime = Date.now()
 
@@ -30,13 +31,13 @@ export function useEmbeddingGenerator({
       if (response.ok) {
         const data = await response.json()
         const duration = Date.now() - startTime
-        console.log(`[EMBEDDING] ✅ 임베딩 생성 완료: ${data.count}개 생성 (${duration}ms 소요)`)
+        logger.log(`[EMBEDDING] ✅ 임베딩 생성 완료: ${data.count}개 생성 (${duration}ms 소요)`)
         setLastProcessedTime(Date.now())
       } else {
-        console.error('[EMBEDDING] ❌ 임베딩 생성 실패:', response.status)
+        logger.error('[EMBEDDING] ❌ 임베딩 생성 실패:', response.status)
       }
     } catch (error) {
-      console.error('[EMBEDDING] ❌ 임베딩 생성 에러:', error)
+      logger.error('[EMBEDDING] ❌ 임베딩 생성 에러:', error)
     } finally {
       setIsGenerating(false)
     }
@@ -57,11 +58,11 @@ export function useEmbeddingGenerator({
       const timeSinceLastProcess = now - lastProcessedTime
       const secondsElapsed = Math.floor(timeSinceLastProcess / 1000)
 
-      console.log(`[EMBEDDING] 📊 체크: ${secondsElapsed}초 경과`)
+      logger.log(`[EMBEDDING] 📊 체크: ${secondsElapsed}초 경과`)
 
       // 30초마다 무조건 실행
       if (timeSinceLastProcess >= 30000) {
-        console.log(`[EMBEDDING] 🎯 30초 경과! 임베딩 생성 시작`)
+        logger.log(`[EMBEDDING] 🎯 30초 경과! 임베딩 생성 시작`)
         generateEmbeddings()
       }
     }

@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/logger'
 
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
@@ -39,12 +40,12 @@ export default function MultiWarningPage() {
         payload: { userId: user.id }
       })
 
-      console.log('✅ 다른 세션에 새로고침 명령 전송')
+      logger.log('✅ 다른 세션에 새로고침 명령 전송')
 
       // 3. 콘솔 페이지로 이동
       router.push('/console')
     } catch (error) {
-      console.error('❌ 접속 처리 실패:', error)
+      logger.error('❌ 접속 처리 실패:', error)
       alert('접속 처리에 실패했습니다. 다시 시도해주세요.')
       setIsProcessing(false)
     }

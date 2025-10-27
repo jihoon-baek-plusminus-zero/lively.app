@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Languages, Mic, Maximize2, Minimize2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { logger } from '@/lib/logger'
 
 interface Caption {
   id: string
@@ -67,7 +68,7 @@ export default function CaptionPanel({
 
     // 이미 번역된 텍스트가 있으면 API 호출 안 함
     if (translatedTexts[captionId]) {
-      console.log('⏭️ 이미 번역됨:', captionId)
+      logger.log('⏭️ 이미 번역됨:', captionId)
       return
     }
 
@@ -112,7 +113,7 @@ export default function CaptionPanel({
         })
       }
     } catch (error) {
-      console.error('Translation error:', error)
+      logger.error('Translation error:', error)
       // 에러 시 '번역 중...' 제거
       setTranslatedTexts(prev => {
         const newState = { ...prev }
@@ -125,7 +126,7 @@ export default function CaptionPanel({
   // 자막 번역 업데이트
   const updateCaptionTranslation = async (captionId: string, translatedText: string) => {
     try {
-      console.log('💾 DB에 번역 저장 시도:', captionId, translatedText.substring(0, 30))
+      logger.log('💾 DB에 번역 저장 시도:', captionId, translatedText.substring(0, 30))
       const { supabase } = await import('@/lib/supabase')
       const { data, error } = await supabase
         .from('captions')
@@ -134,13 +135,13 @@ export default function CaptionPanel({
         .select()
 
       if (error) {
-        console.error('❌ 번역 저장 실패:', error)
+        logger.error('❌ 번역 저장 실패:', error)
         throw error
       }
 
-      console.log('✅ 번역 DB 저장 성공:', captionId, data)
+      logger.log('✅ 번역 DB 저장 성공:', captionId, data)
     } catch (error) {
-      console.error('❌ 번역 저장 에러:', error)
+      logger.error('❌ 번역 저장 에러:', error)
     }
   }
 
@@ -187,7 +188,7 @@ export default function CaptionPanel({
 
       if (hasTranslation) {
         setTranslatedTexts(translations)
-        console.log('📥 DB에서 번역 로드:', Object.keys(translations).length, '개')
+        logger.log('📥 DB에서 번역 로드:', Object.keys(translations).length, '개')
       }
     }
   }, [isCompleted, savedCaptions])
@@ -203,7 +204,7 @@ export default function CaptionPanel({
       )
 
       if (untranslatedCaptions.length > 0) {
-        console.log('🌐 완료된 강의 번역 시작:', untranslatedCaptions.length, '개 (미번역)')
+        logger.log('🌐 완료된 강의 번역 시작:', untranslatedCaptions.length, '개 (미번역)')
 
         // 번역 진행중 상태 설정
         setIsTranslating(true)
@@ -214,7 +215,7 @@ export default function CaptionPanel({
         // 순차적으로 번역 (API 부하 감소)
         untranslatedCaptions.forEach((caption, index) => {
           setTimeout(async () => {
-            console.log('🌐 번역 요청 (완료된 강의):', caption.text)
+            logger.log('🌐 번역 요청 (완료된 강의):', caption.text)
 
             try {
               const response = await fetch('/api/translate', {
@@ -241,13 +242,13 @@ export default function CaptionPanel({
                 if (completed === untranslatedCaptions.length) {
                   setIsTranslating(false) // 번역 완료
                   if (onBulkTranslationComplete) {
-                    console.log('✅ 모든 번역 완료, 일괄 저장 시작')
+                    logger.log('✅ 모든 번역 완료, 일괄 저장 시작')
                     onBulkTranslationComplete(allTranslations)
                   }
                 }
               }
             } catch (error) {
-              console.error('번역 실패:', error)
+              logger.error('번역 실패:', error)
               completed++
               // 에러가 발생해도 모든 번역 시도가 끝났는지 확인
               if (completed === untranslatedCaptions.length) {
@@ -260,7 +261,7 @@ export default function CaptionPanel({
           }, index * 200) // 200ms 간격으로 요청
         })
       } else {
-        console.log('✅ 모든 자막이 이미 번역되어 있습니다')
+        logger.log('✅ 모든 자막이 이미 번역되어 있습니다')
       }
     }
   }, [translationEnabled]) // savedCaptions 제거하여 중복 실행 방지

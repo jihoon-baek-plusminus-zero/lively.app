@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { logger } from '@/lib/logger'
 import { createClient, LiveTranscriptionEvents } from '@deepgram/sdk'
 
 export interface Caption {
@@ -36,13 +37,13 @@ export function useDeepgram(): UseDeepgramReturn {
         throw new Error('Deepgram API 키가 설정되지 않았습니다')
       }
 
-      console.log('🔑 Deepgram API 키 확인됨')
+      logger.log('🔑 Deepgram API 키 확인됨')
 
       // Deepgram 클라이언트 생성
       const deepgram = createClient(apiKey)
       deepgramRef.current = deepgram
 
-      console.log('📡 Deepgram 클라이언트 생성 완료')
+      logger.log('📡 Deepgram 클라이언트 생성 완료')
 
       // Live Transcription 연결
       const languageCode = languages[0] || 'ko'
@@ -61,15 +62,15 @@ export function useDeepgram(): UseDeepgramReturn {
 
       const connection = deepgram.listen.live(liveOptions)
 
-      console.log(`🌍 언어 설정: ${languageCode === 'multi' ? '다국어 자동감지' : languageCode}`)
+      logger.log(`🌍 언어 설정: ${languageCode === 'multi' ? '다국어 자동감지' : languageCode}`)
 
       connectionRef.current = connection
 
-      console.log('🎧 Live Transcription 설정 완료')
+      logger.log('🎧 Live Transcription 설정 완료')
 
       // 연결 성공
       connection.on(LiveTranscriptionEvents.Open, () => {
-        console.log('✅ Deepgram 연결 성공')
+        logger.log('✅ Deepgram 연결 성공')
         setIsConnected(true)
 
         // MediaRecorder로 오디오 청크 전송
@@ -118,23 +119,23 @@ export function useDeepgram(): UseDeepgramReturn {
             }
           })
 
-          console.log(`${isFinal ? '✅ Final' : '⏳ Interim'}: ${transcript}`)
+          logger.log(`${isFinal ? '✅ Final' : '⏳ Interim'}: ${transcript}`)
         }
       })
 
       // 에러 처리
       connection.on(LiveTranscriptionEvents.Error, (error: any) => {
-        console.error('❌ Deepgram 오류:', error)
+        logger.error('❌ Deepgram 오류:', error)
         setError('실시간 자막 생성 중 오류가 발생했습니다.')
       })
 
       // 연결 종료
       connection.on(LiveTranscriptionEvents.Close, () => {
-        console.log('🔌 Deepgram 연결 종료')
+        logger.log('🔌 Deepgram 연결 종료')
         setIsConnected(false)
       })
     } catch (err: any) {
-      console.error('Deepgram 연결 오류:', err)
+      logger.error('Deepgram 연결 오류:', err)
       setError('Deepgram 연결에 실패했습니다.')
     }
   }, [])
@@ -151,7 +152,7 @@ export function useDeepgram(): UseDeepgramReturn {
     }
 
     setIsConnected(false)
-    console.log('🛑 Deepgram 연결 해제')
+    logger.log('🛑 Deepgram 연결 해제')
   }, [])
 
   // 컴포넌트 언마운트 시 정리

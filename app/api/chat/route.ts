@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 import OpenAI from 'openai'
 import { createClient } from '@supabase/supabase-js'
 
@@ -95,13 +96,13 @@ Reglas importantes:
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
-  console.log('[API/CHAT] 💬 채팅 요청 시작')
+  logger.log('[API/CHAT] 💬 채팅 요청 시작')
 
   try {
     const { messages, lectureId, userLanguage, userId } = await request.json()
 
     if (!messages || !Array.isArray(messages)) {
-      console.log('[API/CHAT] ❌ 메시지 배열 누락')
+      logger.log('[API/CHAT] ❌ 메시지 배열 누락')
       return NextResponse.json(
         { error: 'Messages array is required' },
         { status: 400 }
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!userId) {
-      console.log('[API/CHAT] ❌ userId 누락')
+      logger.log('[API/CHAT] ❌ userId 누락')
       return NextResponse.json(
         { error: 'userId is required' },
         { status: 400 }
@@ -117,14 +118,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. AI 크레딧 확인
-    console.log('[API/CHAT] 💳 AI 크레딧 확인 중...')
+    logger.log('[API/CHAT] 💳 AI 크레딧 확인 중...')
     const { data: creditCheck, error: creditError } = await supabase.rpc('check_ai_credits', {
       p_user_id: userId,
       p_required_credits: 1
     })
 
     if (creditError) {
-      console.error('[API/CHAT] ❌ 크레딧 확인 실패:', creditError)
+      logger.error('[API/CHAT] ❌ 크레딧 확인 실패:', creditError)
       return NextResponse.json(
         { error: 'Failed to check AI credits' },
         { status: 500 }
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!creditCheck?.has_credits) {
-      console.log('[API/CHAT] ❌ AI 크레딧 부족')
+      logger.log('[API/CHAT] ❌ AI 크레딧 부족')
       return NextResponse.json(
         {
           error: 'Insufficient AI credits',
@@ -143,23 +144,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`[API/CHAT] ✅ 크레딧 충분 (잔여: ${creditCheck.remaining})`)
+    logger.log(`[API/CHAT] ✅ 크레딧 충분 (잔여: ${creditCheck.remaining})`)
 
     // 마지막 사용자 메시지에서 언어 감지
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop()
     const detectedLang = lastUserMessage ? detectLanguage(lastUserMessage.content) : userLanguage || 'ko'
 
-    console.log(`[API/CHAT] 📝 사용자 질문: "${lastUserMessage?.content.substring(0, 50)}${lastUserMessage?.content.length > 50 ? '...' : ''}"`)
-    console.log(`[API/CHAT] 🌐 감지된 언어: ${detectedLang}`)
+    logger.log(`[API/CHAT] 📝 사용자 질문: "${lastUserMessage?.content.substring(0, 50)}${lastUserMessage?.content.length > 50 ? '...' : ''}"`)
+    logger.log(`[API/CHAT] 🌐 감지된 언어: ${detectedLang}`)
 
     let contextMessages = [...messages]
 
     // lectureId가 있으면 하이브리드 RAG 수행
     if (lectureId && lastUserMessage) {
-      console.log(`[API/CHAT] 🔍 하이브리드 RAG 모드: lectureId = ${lectureId}`)
+      logger.log(`[API/CHAT] 🔍 하이브리드 RAG 모드: lectureId = ${lectureId}`)
       try {
         // 1. 최근 50개 캡션 가져오기 (무조건)
-        console.log('[API/CHAT] 📥 최근 50개 캡션 가져오는 중...')
+        logger.log('[API/CHAT] 📥 최근 50개 캡션 가져오는 중...')
         const { data: recentCaptions, error: captionsError } = await supabase
           .from('captions')
           .select('text, timestamp_seconds')
@@ -174,10 +175,10 @@ export async function POST(request: NextRequest) {
           .map((c: any, idx: number) => `[${idx + 1}] ${c.text}`)
           .join('\n') || ''
 
-        console.log(`[API/CHAT] ✅ 최근 캡션: ${recentCaptions?.length || 0}개`)
+        logger.log(`[API/CHAT] ✅ 최근 캡션: ${recentCaptions?.length || 0}개`)
 
         // 2. RAG 유사도 검색 (상위 5개)
-        console.log('[API/CHAT] 🔍 RAG 유사도 검색 중...')
+        logger.log('[API/CHAT] 🔍 RAG 유사도 검색 중...')
         const searchResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/embeddings/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -196,13 +197,13 @@ export async function POST(request: NextRequest) {
           ragContext = results
             .map((r: any, idx: number) => `[${idx + 1}] ${r.content}`)
             .join('\n')
-          console.log(`[API/CHAT] ✅ RAG 검색: ${results.length}개 결과`)
+          logger.log(`[API/CHAT] ✅ RAG 검색: ${results.length}개 결과`)
         } else {
-          console.log('[API/CHAT] ⚠️ RAG 검색 실패, 계속 진행')
+          logger.log('[API/CHAT] ⚠️ RAG 검색 실패, 계속 진행')
         }
 
         // 3. 강의 요약 가져오기
-        console.log('[API/CHAT] 📝 강의 요약 가져오는 중...')
+        logger.log('[API/CHAT] 📝 강의 요약 가져오는 중...')
         const { data: summary } = await supabase
           .from('lecture_summaries')
           .select('summary')
@@ -212,7 +213,7 @@ export async function POST(request: NextRequest) {
           .single()
 
         const summaryContext = summary?.summary || '(아직 요약 없음)'
-        console.log(`[API/CHAT] ✅ 요약: ${summary ? '있음' : '없음'}`)
+        logger.log(`[API/CHAT] ✅ 요약: ${summary ? '있음' : '없음'}`)
 
         // 4. 하이브리드 컨텍스트 구성
         const hybridContext = `
@@ -226,7 +227,7 @@ ${ragContext ? `### 관련성 높은 내용 (유사도 검색)
 ${ragContext}` : ''}
 `.trim()
 
-        console.log(`[API/CHAT] 📦 하이브리드 컨텍스트 구성 완료 (요약 + 최근50 + RAG5)`)
+        logger.log(`[API/CHAT] 📦 하이브리드 컨텍스트 구성 완료 (요약 + 최근50 + RAG5)`)
 
         // 컨텍스트를 시스템 메시지에 추가
         contextMessages = [
@@ -243,7 +244,7 @@ ${hybridContext}
         ]
 
       } catch (error) {
-        console.error('[API/CHAT] ❌ 하이브리드 RAG 실패:', error)
+        logger.error('[API/CHAT] ❌ 하이브리드 RAG 실패:', error)
         // 실패 시 기본 모드로 동작
         contextMessages = [
           {
@@ -254,7 +255,7 @@ ${hybridContext}
         ]
       }
     } else {
-      console.log('[API/CHAT] ℹ️ 기본 모드 (lectureId 없음)')
+      logger.log('[API/CHAT] ℹ️ 기본 모드 (lectureId 없음)')
       // lectureId가 없으면 기본 시스템 프롬프트만 사용
       contextMessages = [
         {
@@ -266,7 +267,7 @@ ${hybridContext}
     }
 
     // OpenAI API 호출
-    console.log('[API/CHAT] 🤖 GPT-4o-mini 호출 중...')
+    logger.log('[API/CHAT] 🤖 GPT-4o-mini 호출 중...')
     const gptStartTime = Date.now()
 
     const completion = await openai.chat.completions.create({
@@ -279,25 +280,25 @@ ${hybridContext}
     const aiMessage = completion.choices[0]?.message?.content || '답변을 생성하지 못했습니다.'
     const gptDuration = Date.now() - gptStartTime
 
-    console.log(`[API/CHAT] ✅ GPT-4o-mini 응답 완료 (${gptDuration}ms)`)
-    console.log(`[API/CHAT] 📊 토큰 사용량 - Input: ${completion.usage?.prompt_tokens}, Output: ${completion.usage?.completion_tokens}, Total: ${completion.usage?.total_tokens}`)
+    logger.log(`[API/CHAT] ✅ GPT-4o-mini 응답 완료 (${gptDuration}ms)`)
+    logger.log(`[API/CHAT] 📊 토큰 사용량 - Input: ${completion.usage?.prompt_tokens}, Output: ${completion.usage?.completion_tokens}, Total: ${completion.usage?.total_tokens}`)
 
     // 2. AI 크레딧 차감
-    console.log('[API/CHAT] 💳 AI 크레딧 차감 중...')
+    logger.log('[API/CHAT] 💳 AI 크레딧 차감 중...')
     const { data: usageResult, error: usageError } = await supabase.rpc('increment_ai_usage', {
       p_user_id: userId,
       p_credits: 1
     })
 
     if (usageError) {
-      console.error('[API/CHAT] ⚠️ 크레딧 차감 실패 (응답은 반환):', usageError)
+      logger.error('[API/CHAT] ⚠️ 크레딧 차감 실패 (응답은 반환):', usageError)
       // 크레딧 차감 실패해도 AI 응답은 반환 (이미 생성됨)
     } else {
-      console.log(`[API/CHAT] ✅ 크레딧 차감 완료 (잔여: ${usageResult.remaining})`)
+      logger.log(`[API/CHAT] ✅ 크레딧 차감 완료 (잔여: ${usageResult.remaining})`)
     }
 
     const totalDuration = Date.now() - startTime
-    console.log(`[API/CHAT] 🎉 전체 처리 완료 (${totalDuration}ms)`)
+    logger.log(`[API/CHAT] 🎉 전체 처리 완료 (${totalDuration}ms)`)
 
     return NextResponse.json({
       message: aiMessage,
@@ -307,7 +308,7 @@ ${hybridContext}
     })
 
   } catch (error: any) {
-    console.error('OpenAI API Error:', error)
+    logger.error('OpenAI API Error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to generate response' },
       { status: 500 }

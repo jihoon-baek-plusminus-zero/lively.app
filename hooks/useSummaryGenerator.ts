@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { logger } from '@/lib/logger'
 
 interface UseSummaryGeneratorProps {
   lectureId: string | null
@@ -30,7 +31,7 @@ export function useSummaryGenerator({
 
     if (shouldGenerate) {
       isProcessingRef.current = true
-      console.log(`[SUMMARY-GEN] 📝 100개 캡션 도달 (${captionCount}개), 요약 생성 시작`)
+      logger.log(`[SUMMARY-GEN] 📝 100개 캡션 도달 (${captionCount}개), 요약 생성 시작`)
 
       fetch('/api/summaries/update', {
         method: 'POST',
@@ -40,14 +41,14 @@ export function useSummaryGenerator({
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            console.log(`[SUMMARY-GEN] ✅ 요약 업데이트 성공 (총 ${data.totalCaptionCount}개 캡션)`)
+            logger.log(`[SUMMARY-GEN] ✅ 요약 업데이트 성공 (총 ${data.totalCaptionCount}개 캡션)`)
             lastProcessedCountRef.current = captionCount
           } else {
-            console.log(`[SUMMARY-GEN] ℹ️ ${data.message || '요약 생성 조건 미달'}`)
+            logger.log(`[SUMMARY-GEN] ℹ️ ${data.message || '요약 생성 조건 미달'}`)
           }
         })
         .catch(err => {
-          console.error('[SUMMARY-GEN] ❌ 요약 생성 실패:', err)
+          logger.error('[SUMMARY-GEN] ❌ 요약 생성 실패:', err)
         })
         .finally(() => {
           isProcessingRef.current = false

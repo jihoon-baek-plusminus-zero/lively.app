@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 import OpenAI from 'openai'
 import { createClient } from '@supabase/supabase-js'
 
@@ -13,20 +14,20 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
-  console.log('[API/EMBEDDINGS/SEARCH] 🔍 벡터 검색 시작')
+  logger.log('[API/EMBEDDINGS/SEARCH] 🔍 벡터 검색 시작')
 
   try {
     const { lectureId, query, threshold = 0.5, limit = 5 } = await request.json()
 
     if (!lectureId || !query) {
-      console.log('[API/EMBEDDINGS/SEARCH] ❌ 필수 파라미터 누락')
+      logger.log('[API/EMBEDDINGS/SEARCH] ❌ 필수 파라미터 누락')
       return NextResponse.json(
         { error: 'lectureId and query are required' },
         { status: 400 }
       )
     }
 
-    console.log(`[API/EMBEDDINGS/SEARCH] 📝 Query: "${query.substring(0, 50)}${query.length > 50 ? '...' : ''}"`)
+    logger.log(`[API/EMBEDDINGS/SEARCH] 📝 Query: "${query.substring(0, 50)}${query.length > 50 ? '...' : ''}"`)
 
     // 쿼리 임베딩 생성
     const embStartTime = Date.now()
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
     })
 
     const queryEmbedding = embeddingResponse.data[0].embedding
-    console.log(`[API/EMBEDDINGS/SEARCH] ✅ 쿼리 임베딩 생성 완료 (${Date.now() - embStartTime}ms)`)
+    logger.log(`[API/EMBEDDINGS/SEARCH] ✅ 쿼리 임베딩 생성 완료 (${Date.now() - embStartTime}ms)`)
 
     // Supabase 함수를 사용한 유사도 검색
     const searchStartTime = Date.now()
@@ -48,14 +49,14 @@ export async function POST(request: NextRequest) {
     })
 
     if (error) {
-      console.error('[API/EMBEDDINGS/SEARCH] ❌ 유사도 검색 실패:', error)
+      logger.error('[API/EMBEDDINGS/SEARCH] ❌ 유사도 검색 실패:', error)
       return NextResponse.json(
         { error: 'Failed to search similar content' },
         { status: 500 }
       )
     }
 
-    console.log(`[API/EMBEDDINGS/SEARCH] ✅ 벡터 검색 완료: ${data?.length || 0}개 결과 (${Date.now() - searchStartTime}ms)`)
+    logger.log(`[API/EMBEDDINGS/SEARCH] ✅ 벡터 검색 완료: ${data?.length || 0}개 결과 (${Date.now() - searchStartTime}ms)`)
 
     // 순수 유사도만 사용 (시간 가중치 제거, 상위 5개만)
     const results = (data || []).slice(0, 5).map((item: any) => {
@@ -67,13 +68,13 @@ export async function POST(request: NextRequest) {
     })
 
     const totalDuration = Date.now() - startTime
-    console.log(`[API/EMBEDDINGS/SEARCH] 🎉 검색 완료: ${results.length}개 결과 (순수 유사도, 상위 5개) (총 ${totalDuration}ms)`)
+    logger.log(`[API/EMBEDDINGS/SEARCH] 🎉 검색 완료: ${results.length}개 결과 (순수 유사도, 상위 5개) (총 ${totalDuration}ms)`)
 
     // 상위 결과 로깅
     if (results.length > 0) {
-      console.log(`[API/EMBEDDINGS/SEARCH] 📊 상위 결과:`)
+      logger.log(`[API/EMBEDDINGS/SEARCH] 📊 상위 결과:`)
       results.forEach((r: any, i: number) => {
-        console.log(`  ${i + 1}. 유사도: ${(r.similarity * 100).toFixed(1)}%, 내용: "${r.content.substring(0, 40)}..."`)
+        logger.log(`  ${i + 1}. 유사도: ${(r.similarity * 100).toFixed(1)}%, 내용: "${r.content.substring(0, 40)}..."`)
       })
     }
 
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('Search error:', error)
+    logger.error('Search error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to perform search' },
       { status: 500 }
