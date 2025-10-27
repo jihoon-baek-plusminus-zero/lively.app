@@ -1121,8 +1121,8 @@ export default function ConsolePage() {
             </header>
 
             {/* Mobile Vertical Stack - CaptionPanel (top) + ChatPanel (bottom) */}
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="h-1/2 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="h-1/2 flex flex-col overflow-hidden">
                 <CaptionPanel
                   isRecording={isActiveRecording}
                   isCompleted={isCompleted}
@@ -1137,7 +1137,7 @@ export default function ConsolePage() {
                   realTimeTranslations={realTimeTranslations}
                 />
               </div>
-              <div className="h-1/2 flex flex-col min-h-0 border-t border-gray-200 dark:border-gray-700">
+              <div className="h-1/2 flex flex-col overflow-hidden border-t border-gray-200 dark:border-gray-700">
                 <ChatPanel lectureId={selectedLecture.id} />
               </div>
             </div>
