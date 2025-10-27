@@ -796,6 +796,10 @@ export default function ConsolePage() {
   // 새 강의 생성 핸들러
   const handleCreateLecture = (lecture: Lecture) => {
     setSelectedLecture(lecture)
+    // On mobile, show detail view when new lecture is created
+    if (isMobile) {
+      setShowMobileDetail(true)
+    }
   }
 
   // 강의 선택 핸들러
@@ -1117,8 +1121,8 @@ export default function ConsolePage() {
             </header>
 
             {/* Mobile Vertical Stack - CaptionPanel (top) + ChatPanel (bottom) */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="h-1/2 flex flex-col min-h-0">
                 <CaptionPanel
                   isRecording={isActiveRecording}
                   isCompleted={isCompleted}
@@ -1133,14 +1137,14 @@ export default function ConsolePage() {
                   realTimeTranslations={realTimeTranslations}
                 />
               </div>
-              <div className="flex-1 overflow-hidden border-t border-gray-200 dark:border-gray-700">
+              <div className="h-1/2 flex flex-col min-h-0 border-t border-gray-200 dark:border-gray-700">
                 <ChatPanel lectureId={selectedLecture.id} />
               </div>
             </div>
           </div>
         ) : (
           /* Mobile Lecture List - Fullscreen */
-          <div className="flex-1 overflow-hidden">
+          <div className="w-full h-full overflow-hidden">
             <Sidebar
               selectedLectureId={selectedLecture?.id || null}
               onSelectLecture={handleSelectLecture}
