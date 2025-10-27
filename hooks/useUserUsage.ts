@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { logger } from '@/lib/logger'
 
 export interface UserUsage {
   id: string
@@ -64,7 +65,7 @@ export function useUserUsage() {
         // Silently fail if table doesn't exist yet (migration not run)
         const errorMessage = err instanceof Error ? err.message : ''
         if (!errorMessage.includes('relation "public.user_usages" does not exist')) {
-          console.error('Error fetching user usage:', err)
+          logger.error('Error fetching user usage:', err)
           setError(err instanceof Error ? err.message : 'Failed to load usage data')
         }
         // Set default usage data when table doesn't exist

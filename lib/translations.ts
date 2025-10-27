@@ -1223,6 +1223,20 @@ export const translations = {
     zh: '为获得最准确的结果，请复制并粘贴您要引用的特定文本',
     es: 'Para obtener los resultados más precisos, copie y pegue la transcripción específica que desea consultar',
   },
+  'chat.remaining.questions': {
+    ko: '이번 달 남은 AI 질문 갯수:',
+    en: 'Remaining AI questions this month:',
+    ja: '今月の残りAI質問数：',
+    zh: '本月剩余AI提问次数：',
+    es: 'Preguntas de IA restantes este mes:',
+  },
+  'chat.remaining.count': {
+    ko: '개',
+    en: '',
+    ja: '個',
+    zh: '个',
+    es: '',
+  },
 
   // Multi Warning
   'multi.warning.title': {
@@ -1595,6 +1609,34 @@ export const translations = {
     ja: '今月の残りクレジット：',
     zh: '本月剩余积分：',
     es: 'Créditos restantes este mes:',
+  },
+  'profile.usage.monthly.recording.limit': {
+    ko: '월별 녹음 한도',
+    en: 'Monthly Recording Limit',
+    ja: '月次録音制限',
+    zh: '月度录音限额',
+    es: 'Límite de grabación mensual',
+  },
+  'profile.usage.purchased.recording.time': {
+    ko: '추가 구매 시간 (월 한도 소진 이후 차감됩니다)',
+    en: 'Purchased Time (deducted after monthly quota is exhausted)',
+    ja: '追加購入時間（月次制限消費後に控除されます）',
+    zh: '购买时间（月度配额用完后扣除）',
+    es: 'Tiempo comprado (se deduce después de agotar la cuota mensual)',
+  },
+  'profile.usage.monthly.ai.credit': {
+    ko: '월별 AI 질문 credit',
+    en: 'Monthly AI Question Credits',
+    ja: '月次AI質問クレジット',
+    zh: '月度AI提问积分',
+    es: 'Créditos mensuales de preguntas IA',
+  },
+  'profile.usage.purchased.ai.credit': {
+    ko: '추가 구매 credit (월 한도 소진 이후 차감됩니다)',
+    en: 'Purchased Credits (deducted after monthly quota is exhausted)',
+    ja: '追加購入クレジット（月次制限消費後に控除されます）',
+    zh: '购买积分（月度配额用完后扣除）',
+    es: 'Créditos comprados (se deduce después de agotar la cuota mensual)',
   },
 
   // Profile Page - Account Section

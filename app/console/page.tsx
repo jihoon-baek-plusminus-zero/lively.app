@@ -20,6 +20,7 @@ import { useSummaryGenerator } from '@/hooks/useSummaryGenerator'
 import { useUserUsage } from '@/hooks/useUserUsage'
 import { uploadAudioFile, downloadAudioFile, downloadTranscript } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
+import { logger } from '@/lib/logger'
 
 export default function ConsolePage() {
   const { user, loading } = useAuth()
@@ -120,11 +121,11 @@ export default function ConsolePage() {
         if (error) throw error
 
         if (data && data.length > 0) {
-          console.log('⚠️ 녹음 중인 항목 발견, multi_warning 페이지로 이동')
+          logger.log('⚠️ 녹음 중인 항목 발견, multi_warning 페이지로 이동')
           router.push('/multi_warning')
         }
       } catch (error) {
-        console.error('녹음 중인 항목 체크 실패:', error)
+        logger.error('녹음 중인 항목 체크 실패:', error)
       }
     }
 
@@ -145,7 +146,7 @@ export default function ConsolePage() {
     channel
       .on('broadcast', { event: 'force_refresh' }, (payload) => {
         if (payload.payload.userId === user.id) {
-          console.log('🔄 다른 세션에서 강제 새로고침 명령 수신')
+          logger.log('🔄 다른 세션에서 강제 새로고침 명령 수신')
           // 세션 체크 플래그 제거 후 새로고침
           sessionStorage.removeItem('recording_checked')
           window.location.reload()
@@ -176,7 +177,7 @@ export default function ConsolePage() {
       if (lecture) {
         setSelectedLecture(lecture)
         sessionStorage.removeItem('lastCompletedLecture')
-        console.log('📋 마지막 완료된 강의 자동 선택:', lecture.title)
+        logger.log('📋 마지막 완료된 강의 자동 선택:', lecture.title)
       }
     }
   }, [lectures, selectedLecture])
@@ -188,12 +189,12 @@ export default function ConsolePage() {
         const devices = await navigator.mediaDevices.enumerateDevices()
         const audioInputs = devices.filter(device => device.kind === 'audioinput')
         setAudioDevices(audioInputs)
-        console.log('🎤 사용 가능한 마이크:', audioInputs.length, '개')
+        logger.log('🎤 사용 가능한 마이크:', audioInputs.length, '개')
         audioInputs.forEach((device, idx) => {
-          console.log(`  ${idx + 1}. ${device.label || `마이크 ${idx + 1}`} (${device.deviceId})`)
+          logger.log(`  ${idx + 1}. ${device.label || `마이크 ${idx + 1}`} (${device.deviceId})`)
         })
       } catch (error) {
-        console.error('오디오 디바이스 목록 로드 실패:', error)
+        logger.error('오디오 디바이스 목록 로드 실패:', error)
       }
     }
 
@@ -246,7 +247,7 @@ export default function ConsolePage() {
   useEffect(() => {
     // 녹음 중이고 일시정지가 아닌 경우에만 interval 재시작
     if (isActiveRecording && !isPaused && creditTrackingIntervalRef.current) {
-      console.log('🔄 번역 상태 변경 감지! 크레딧 추적 재시작 - 새 번역 상태:', translationEnabled)
+      logger.log('🔄 번역 상태 변경 감지! 크레딧 추적 재시작 - 새 번역 상태:', translationEnabled)
       startCreditTracking()
     }
   }, [translationEnabled])
@@ -301,14 +302,14 @@ export default function ConsolePage() {
         ? (Date.now() - recordingStartTime) / 1000
         : 0
 
-      console.log('🎯 새 자막 처리 시작:', caption.id, caption.text.substring(0, 30))
+      logger.log('🎯 새 자막 처리 시작:', caption.id, caption.text.substring(0, 30))
 
       try {
         let translatedText: string | undefined = undefined
 
         // 번역이 활성화된 경우 먼저 번역 수행
         if (translationEnabled && translationTargetLang) {
-          console.log('🌐 번역 API 호출:', caption.text.substring(0, 30))
+          logger.log('🌐 번역 API 호출:', caption.text.substring(0, 30))
 
           try {
             const response = await fetch('/api/translate', {
@@ -323,7 +324,7 @@ export default function ConsolePage() {
             if (response.ok) {
               const data = await response.json()
               translatedText = data.translatedText
-              console.log('✅ 번역 완료:', translatedText?.substring(0, 30))
+              logger.log('✅ 번역 완료:', translatedText?.substring(0, 30))
 
               // UI에 번역 즉시 표시
               setRealTimeTranslations(prev => ({
@@ -331,15 +332,15 @@ export default function ConsolePage() {
                 [caption.id]: translatedText!
               }))
             } else {
-              console.warn('⚠️ 번역 API 응답 실패:', response.status)
+              logger.warn('⚠️ 번역 API 응답 실패:', response.status)
             }
           } catch (error) {
-            console.error('❌ 번역 API 오류:', error)
+            logger.error('❌ 번역 API 오류:', error)
           }
         }
 
         // 자막과 번역을 동시에 저장
-        console.log('💾 자막 저장 (번역 포함):', {
+        logger.log('💾 자막 저장 (번역 포함):', {
           text: caption.text.substring(0, 30),
           translated: translatedText ? translatedText.substring(0, 30) : '없음'
         })
@@ -353,7 +354,7 @@ export default function ConsolePage() {
         )
 
         if (dbCaptionId) {
-          console.log('✅ 자막 DB 저장 완료:', dbCaptionId, '번역 여부:', !!translatedText)
+          logger.log('✅ 자막 DB 저장 완료:', dbCaptionId, '번역 여부:', !!translatedText)
 
           // ID 매핑 저장 (나중에 필요한 경우를 위해)
           setCaptionIdMapping(prev => ({
@@ -362,7 +363,7 @@ export default function ConsolePage() {
           }))
         }
       } catch (error) {
-        console.error('❌ 자막 처리 실패:', caption.id, error)
+        logger.error('❌ 자막 처리 실패:', caption.id, error)
       }
     })
   }, [deepgram.captions, selectedLecture, saveCaption, recordingStartTime, translationEnabled, translationTargetLang])
@@ -374,7 +375,7 @@ export default function ConsolePage() {
 
     // 녹음 중이면 일시정지 → 마이크 변경 → 재개
     if (isRecording && selectedLecture) {
-      console.log('🔄 마이크 변경 프로세스 시작... 새 디바이스:', newMicId || 'default')
+      logger.log('🔄 마이크 변경 프로세스 시작... 새 디바이스:', newMicId || 'default')
 
       // 현재 일시정지 상태 저장
       const wasRecording = !isPaused
@@ -382,18 +383,18 @@ export default function ConsolePage() {
       try {
         // 1. 녹음 중이었다면 기존 일시정지 로직 실행
         if (wasRecording) {
-          console.log('⏸️ 마이크 변경을 위해 일시정지')
+          logger.log('⏸️ 마이크 변경을 위해 일시정지')
           deepgram.disconnect()
           audioRecorder.pauseRecording()
           setIsPaused(true)
         }
 
         // 2. 오디오 스트림 중지
-        console.log('🛑 기존 오디오 스트림 중지')
+        logger.log('🛑 기존 오디오 스트림 중지')
         await audioRecorder.stopRecording()
 
         // 3. 새 마이크로 녹음 시작
-        console.log('🎤 새 마이크로 스트림 시작:', newMicId || 'default')
+        logger.log('🎤 새 마이크로 스트림 시작:', newMicId || 'default')
         const newStream = await audioRecorder.startRecording(newMicId || undefined)
 
         if (!newStream) {
@@ -402,16 +403,16 @@ export default function ConsolePage() {
 
         // 4. 원래 녹음 중이었다면 기존 재개 로직 실행
         if (wasRecording) {
-          console.log('▶️ 마이크 변경 완료, 녹음 재개')
+          logger.log('▶️ 마이크 변경 완료, 녹음 재개')
           const audioLanguages = selectedLecture.audio_languages || ['ko']
           await deepgram.connect(newStream, audioLanguages)
           audioRecorder.resumeRecording()
           setIsPaused(false)
         }
 
-        console.log('✅ 마이크 변경 완료')
+        logger.log('✅ 마이크 변경 완료')
       } catch (error) {
-        console.error('❌ 마이크 변경 실패:', error)
+        logger.error('❌ 마이크 변경 실패:', error)
         alert('마이크 변경에 실패했습니다. 녹음을 중지하고 다시 시작해주세요.')
       }
     }
@@ -424,7 +425,7 @@ export default function ConsolePage() {
       clearInterval(creditTrackingIntervalRef.current)
     }
 
-    console.log('🎬 크레딧 추적 시작 - 번역 상태:', translationEnabled)
+    logger.log('🎬 크레딧 추적 시작 - 번역 상태:', translationEnabled)
 
     creditTrackingIntervalRef.current = setInterval(async () => {
       if (!user) return
@@ -432,7 +433,7 @@ export default function ConsolePage() {
       // 번역이 켜져있으면 2초 차감, 아니면 1초 차감
       const secondsToDeduct = translationEnabled ? 2 : 1
 
-      console.log(`⏱️ 크레딧 차감 중... | 차감량: ${secondsToDeduct}초 | 번역 상태: ${translationEnabled ? 'ON' : 'OFF'}`)
+      logger.log(`⏱️ 크레딧 차감 중... | 차감량: ${secondsToDeduct}초 | 번역 상태: ${translationEnabled ? 'ON' : 'OFF'}`)
 
       try {
         const { data, error } = await supabase.rpc('increment_recording_usage', {
@@ -440,17 +441,30 @@ export default function ConsolePage() {
           p_seconds: secondsToDeduct
         })
 
+        logger.log('[Recording Usage] RPC Response:', data)
+        logger.log('[Recording Usage] RPC Error:', error)
+
         if (error) throw error
 
-        // 서버에서 반환된 데이터 확인
+        // 서버에서 반환된 데이터 확인 (새 형식)
         if (data) {
-          const { remaining_time, total_used, seconds_used } = data
+          const {
+            seconds_used,
+            seconds_from_monthly,
+            seconds_from_purchased,
+            monthly_used,
+            monthly_quota,
+            monthly_remaining,
+            purchased_remaining
+          } = data
 
-          console.log(`✅ 크레딧 차감 완료 | 이번 차감: ${seconds_used}초 | 총 사용: ${total_used}초 | 남은 크레딧: ${remaining_time}초`)
+          const totalRemaining = (monthly_remaining || 0) + (purchased_remaining || 0)
+
+          logger.log(`✅ 크레딧 차감 완료 | 차감: ${seconds_used}초 (월별:${seconds_from_monthly}초, 추가구매:${seconds_from_purchased}초) | 잔여: 월별 ${monthly_remaining}초 + 추가구매 ${purchased_remaining}초 = 총 ${totalRemaining}초`)
 
           // 크레딧 부족 시 자동 정지
-          if (remaining_time <= 0) {
-            console.warn('⚠️ 녹음 크레딧 소진! 자동 정지합니다.')
+          if (totalRemaining <= 0) {
+            logger.warn('⚠️ 녹음 크레딧 소진! 자동 정지합니다.')
             alert('녹음 가능 시간이 모두 소진되었습니다. 녹음을 중지합니다.')
 
             // 크레딧 추적 중지
@@ -467,7 +481,7 @@ export default function ConsolePage() {
           }
         }
       } catch (err) {
-        console.error('❌ 크레딧 차감 실패:', err)
+        logger.error('❌ 크레딧 차감 실패:', err)
         // 에러 발생 시에도 크레딧 추적 중지
         if (creditTrackingIntervalRef.current) {
           clearInterval(creditTrackingIntervalRef.current)
@@ -496,21 +510,35 @@ export default function ConsolePage() {
         p_required_seconds: 1
       })
 
+      logger.log('[Recording Credit Check] Response:', creditCheck)
+      logger.log('[Recording Credit Check] Error:', creditError)
+
       if (creditError) throw creditError
 
       if (!creditCheck || !creditCheck.has_enough_time) {
-        alert('녹음 가능 시간이 부족합니다. 플랜을 업그레이드하거나 다음 주기를 기다려주세요.')
+        logger.log('[Recording Credit Check] Insufficient credits:', {
+          has_enough_time: creditCheck?.has_enough_time,
+          monthly_remaining: creditCheck?.monthly_remaining,
+          purchased_remaining: creditCheck?.purchased_remaining,
+          total_available: creditCheck?.total_available,
+          required: creditCheck?.required
+        })
+        alert(`녹음 가능 시간이 부족합니다.\n월별 잔여: ${creditCheck?.monthly_remaining || 0}초\n추가구매 잔여: ${creditCheck?.purchased_remaining || 0}초\n총 사용 가능: ${creditCheck?.total_available || 0}초`)
         return
       }
 
-      console.log('✅ 크레딧 확인 완료:', creditCheck.remaining_time, '초 남음')
+      logger.log('✅ 크레딧 확인 완료:', {
+        monthly_remaining: creditCheck.monthly_remaining,
+        purchased_remaining: creditCheck.purchased_remaining,
+        total_available: creditCheck.total_available
+      })
     } catch (err) {
-      console.error('크레딧 확인 실패:', err)
+      logger.error('크레딧 확인 실패:', err)
       alert('녹음 크레딧을 확인하는 중 오류가 발생했습니다.')
       return
     }
 
-    console.log('🎬 녹음 시작 프로세스 시작...')
+    logger.log('🎬 녹음 시작 프로세스 시작...')
 
     // 실시간 번역 데이터, ID 매핑, 처리된 자막 초기화
     setRealTimeTranslations({})
@@ -525,13 +553,13 @@ export default function ConsolePage() {
         throw new Error('오디오 스트림을 가져올 수 없습니다')
       }
 
-      console.log('📡 Deepgram 연결 시작...')
+      logger.log('📡 Deepgram 연결 시작...')
 
       // 2. Deepgram 연결 (강의의 언어 설정 사용, 없으면 기본값)
       const audioLanguages = selectedLecture.audio_languages || ['ko']
       await deepgram.connect(stream, audioLanguages)
 
-      console.log('✅ Deepgram 연결 완료')
+      logger.log('✅ Deepgram 연결 완료')
 
       // 3. 강의 상태를 'recording'으로 변경
       await startLecture(selectedLecture.id)
@@ -542,9 +570,9 @@ export default function ConsolePage() {
       // 5. 크레딧 추적 시작
       startCreditTracking()
 
-      console.log('🎉 모든 설정 완료! 녹음 시작!')
+      logger.log('🎉 모든 설정 완료! 녹음 시작!')
     } catch (error) {
-      console.error('❌ 녹음 시작 실패:', error)
+      logger.error('❌ 녹음 시작 실패:', error)
       // 실패 시 정리
       audioRecorder.stopRecording()
       deepgram.disconnect()
@@ -561,28 +589,28 @@ export default function ConsolePage() {
   const handlePauseResume = async () => {
     if (isPaused) {
       // 재개: Deepgram 재연결 + MediaRecorder 재개
-      console.log('▶️ 녹음 재개 - Deepgram 재연결 + MediaRecorder 재개')
+      logger.log('▶️ 녹음 재개 - Deepgram 재연결 + MediaRecorder 재개')
       if (audioRecorder.audioStream && selectedLecture) {
         const audioLanguages = selectedLecture.audio_languages || ['ko']
         await deepgram.connect(audioRecorder.audioStream, audioLanguages)
         audioRecorder.resumeRecording()
-        console.log('✅ Deepgram 재연결 및 MediaRecorder 재개 완료')
+        logger.log('✅ Deepgram 재연결 및 MediaRecorder 재개 완료')
       }
 
       // 크레딧 추적 재개
-      console.log('▶️ 크레딧 추적 재개')
+      logger.log('▶️ 크레딧 추적 재개')
       startCreditTracking()
 
       setIsPaused(false)
     } else {
       // 일시정지: Deepgram 연결 끊기 + MediaRecorder 일시정지
-      console.log('⏸️ 녹음 일시정지 - Deepgram 연결 해제 + MediaRecorder 일시정지')
+      logger.log('⏸️ 녹음 일시정지 - Deepgram 연결 해제 + MediaRecorder 일시정지')
       deepgram.disconnect()
       audioRecorder.pauseRecording()
-      console.log('✅ Deepgram 연결 해제 및 MediaRecorder 일시정지 완료')
+      logger.log('✅ Deepgram 연결 해제 및 MediaRecorder 일시정지 완료')
 
       // 크레딧 추적 일시정지
-      console.log('⏸️ 크레딧 추적 일시정지')
+      logger.log('⏸️ 크레딧 추적 일시정지')
       if (creditTrackingIntervalRef.current) {
         clearInterval(creditTrackingIntervalRef.current)
         creditTrackingIntervalRef.current = null
@@ -605,13 +633,13 @@ export default function ConsolePage() {
     }
 
     try {
-      console.log('🛑 녹음 종료 프로세스 시작...')
+      logger.log('🛑 녹음 종료 프로세스 시작...')
 
       // 0. 녹음 종료 전 아직 저장되지 않은 임시 자막(isFinal = false) 저장
       const pendingCaptions = deepgram.captions.filter(c => !c.isFinal && !processedCaptionIds.has(c.id))
 
       if (pendingCaptions.length > 0) {
-        console.log(`📝 저장되지 않은 임시 자막 ${pendingCaptions.length}개 발견, 저장 시작...`)
+        logger.log(`📝 저장되지 않은 임시 자막 ${pendingCaptions.length}개 발견, 저장 시작...`)
 
         for (const caption of pendingCaptions) {
           // 중복 방지: 이미 처리된 것으로 표시
@@ -626,14 +654,14 @@ export default function ConsolePage() {
             ? (Date.now() - recordingStartTime) / 1000
             : 0
 
-          console.log('💾 임시 자막 저장:', caption.text.substring(0, 30))
+          logger.log('💾 임시 자막 저장:', caption.text.substring(0, 30))
 
           try {
             let translatedText: string | undefined = undefined
 
             // 번역이 활성화된 경우 번역 수행
             if (translationEnabled && translationTargetLang) {
-              console.log('🌐 임시 자막 번역 API 호출:', caption.text.substring(0, 30))
+              logger.log('🌐 임시 자막 번역 API 호출:', caption.text.substring(0, 30))
 
               try {
                 const response = await fetch('/api/translate', {
@@ -648,12 +676,12 @@ export default function ConsolePage() {
                 if (response.ok) {
                   const data = await response.json()
                   translatedText = data.translatedText
-                  console.log('✅ 임시 자막 번역 완료:', translatedText?.substring(0, 30))
+                  logger.log('✅ 임시 자막 번역 완료:', translatedText?.substring(0, 30))
                 } else {
-                  console.warn('⚠️ 임시 자막 번역 API 응답 실패:', response.status)
+                  logger.warn('⚠️ 임시 자막 번역 API 응답 실패:', response.status)
                 }
               } catch (error) {
-                console.error('❌ 임시 자막 번역 API 오류:', error)
+                logger.error('❌ 임시 자막 번역 API 오류:', error)
               }
             }
 
@@ -667,16 +695,16 @@ export default function ConsolePage() {
             )
 
             if (dbCaptionId) {
-              console.log('✅ 임시 자막 DB 저장 완료:', dbCaptionId, '번역 여부:', !!translatedText)
+              logger.log('✅ 임시 자막 DB 저장 완료:', dbCaptionId, '번역 여부:', !!translatedText)
             }
           } catch (error) {
-            console.error('❌ 임시 자막 저장 실패:', error)
+            logger.error('❌ 임시 자막 저장 실패:', error)
           }
         }
 
-        console.log('✅ 모든 임시 자막 저장 완료')
+        logger.log('✅ 모든 임시 자막 저장 완료')
       } else {
-        console.log('✅ 저장할 임시 자막 없음')
+        logger.log('✅ 저장할 임시 자막 없음')
       }
 
       // 1. Deepgram 연결 해제
@@ -686,17 +714,17 @@ export default function ConsolePage() {
       const audioBlob = await audioRecorder.stopRecording()
 
       // 번역은 이미 실시간으로 자막과 함께 저장되었으므로 추가 저장 불필요
-      console.log('✅ 모든 자막과 번역이 실시간으로 저장됨')
+      logger.log('✅ 모든 자막과 번역이 실시간으로 저장됨')
 
       // 3. 오디오 파일 업로드
       if (audioBlob) {
-        console.log('📤 오디오 파일 업로드 중...')
+        logger.log('📤 오디오 파일 업로드 중...')
         const audioUrl = await uploadAudioFile(selectedLecture.id, audioBlob, user.id)
 
         if (audioUrl) {
           // 오디오 URL 데이터베이스에 저장
           await updateAudioUrl(selectedLecture.id, audioUrl)
-          console.log('✅ 오디오 파일 저장 완료:', audioUrl)
+          logger.log('✅ 오디오 파일 저장 완료:', audioUrl)
         }
       }
 
@@ -711,7 +739,7 @@ export default function ConsolePage() {
       setElapsedTime(0)
       setIsPaused(false)
 
-      console.log('✅ 녹음 종료 완료 - 3초 후 페이지 새로고침')
+      logger.log('✅ 녹음 종료 완료 - 3초 후 페이지 새로고침')
 
       // 7. 3초 대기 후 강의 ID를 URL에 저장하고 페이지 새로고침
       await new Promise(resolve => setTimeout(resolve, 3000))
@@ -719,7 +747,7 @@ export default function ConsolePage() {
       sessionStorage.setItem('lastCompletedLecture', selectedLecture.id)
       window.location.reload()
     } catch (error) {
-      console.error('❌ 녹음 종료 실패:', error)
+      logger.error('❌ 녹음 종료 실패:', error)
       setIsSavingAudio(false)
     }
   }
@@ -735,7 +763,7 @@ export default function ConsolePage() {
       const fileName = `${selectedLecture.title.replace(/[^a-zA-Z0-9가-힣]/g, '_')}.webm`
       await downloadAudioFile(selectedLecture.audio_file_url, fileName)
     } catch (error) {
-      console.error('음성 다운로드 실패:', error)
+      logger.error('음성 다운로드 실패:', error)
       alert(t('console.alert.audio.download.failed'))
     }
   }
@@ -751,7 +779,7 @@ export default function ConsolePage() {
       const fileName = `${selectedLecture?.title.replace(/[^a-zA-Z0-9가-힣]/g, '_')}_대본.txt`
       downloadTranscript(savedCaptions, fileName)
     } catch (error) {
-      console.error('대본 다운로드 실패:', error)
+      logger.error('대본 다운로드 실패:', error)
       alert(t('console.alert.transcript.download.failed'))
     }
   }
@@ -810,7 +838,7 @@ export default function ConsolePage() {
     const lecture = lectures.find((l) => l.id === lectureId)
     if (lecture) {
       setSelectedLecture(lecture)
-      console.log('📋 강의 선택:', lecture.title, '(상태:', lecture.status, ')')
+      logger.log('📋 강의 선택:', lecture.title, '(상태:', lecture.status, ')')
 
       // On mobile, show detail view when lecture is selected
       if (isMobile) {
@@ -839,7 +867,7 @@ export default function ConsolePage() {
 
   // 번역 완료 콜백 - CaptionPanel에서 번역 완료 시 호출됨 (메모리에만 저장)
   const handleTranslationComplete = (captionId: string, translatedText: string) => {
-    console.log('🔄 번역 완료 (메모리 저장):', captionId, '→', translatedText.substring(0, 30))
+    logger.log('🔄 번역 완료 (메모리 저장):', captionId, '→', translatedText.substring(0, 30))
 
     // 실시간 번역 상태 업데이트 (메모리에만 저장, DB 저장은 녹음 종료 시)
     setRealTimeTranslations(prev => ({
@@ -850,7 +878,7 @@ export default function ConsolePage() {
 
   // 일괄 번역 완료 콜백 - 완료된 강의 번역 시
   const handleBulkTranslationComplete = async (translations: Record<string, string>) => {
-    console.log('💾 완료된 강의 번역 일괄 저장 시작...')
+    logger.log('💾 완료된 강의 번역 일괄 저장 시작...')
     setIsSavingTranslations(true)
 
     try {
@@ -860,9 +888,9 @@ export default function ConsolePage() {
       )
 
       await Promise.all(updates)
-      console.log('✅ 번역 일괄 저장 완료:', updates.length, '개')
+      logger.log('✅ 번역 일괄 저장 완료:', updates.length, '개')
     } catch (error) {
-      console.error('❌ 번역 저장 실패:', error)
+      logger.error('❌ 번역 저장 실패:', error)
     } finally {
       setIsSavingTranslations(false)
     }

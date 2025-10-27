@@ -5,7 +5,7 @@ import { Users, Search, Loader2, Clock, Coins, UserX, AlertTriangle } from 'luci
 import { useUserManagement, UserWithUsage } from '@/hooks/useUserManagement'
 
 export default function UserSettings() {
-  const { loading, error, searchUserByEmail, updateRecordingQuota, updateAIQuota, deleteUser } =
+  const { loading, error, searchUserByEmail, updateRecordingQuota, updateAIQuota, updatePurchasedRecordingTime, updatePurchasedAICredit, deleteUser } =
     useUserManagement()
 
   // Search state
@@ -16,18 +16,30 @@ export default function UserSettings() {
 
   // Modal states
   const [showRecordingModal, setShowRecordingModal] = useState(false)
+  const [showPurchasedRecordingModal, setShowPurchasedRecordingModal] = useState(false)
   const [showAIModal, setShowAIModal] = useState(false)
+  const [showPurchasedAIModal, setShowPurchasedAIModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
-  // Recording modal state
+  // Recording modal state (monthly)
   const [recordingOperation, setRecordingOperation] = useState<'add' | 'subtract'>('add')
   const [recordingHours, setRecordingHours] = useState('')
   const [isUpdatingRecording, setIsUpdatingRecording] = useState(false)
 
-  // AI modal state
+  // Purchased recording modal state
+  const [purchasedRecordingOperation, setPurchasedRecordingOperation] = useState<'add' | 'subtract'>('add')
+  const [purchasedRecordingHours, setPurchasedRecordingHours] = useState('')
+  const [isUpdatingPurchasedRecording, setIsUpdatingPurchasedRecording] = useState(false)
+
+  // AI modal state (monthly)
   const [aiOperation, setAIOperation] = useState<'add' | 'subtract'>('add')
   const [aiCredits, setAICredits] = useState('')
   const [isUpdatingAI, setIsUpdatingAI] = useState(false)
+
+  // Purchased AI modal state
+  const [purchasedAIOperation, setPurchasedAIOperation] = useState<'add' | 'subtract'>('add')
+  const [purchasedAICredits, setPurchasedAICredits] = useState('')
+  const [isUpdatingPurchasedAI, setIsUpdatingPurchasedAI] = useState(false)
 
   // Delete modal state
   const [isDeleting, setIsDeleting] = useState(false)
@@ -149,6 +161,70 @@ export default function UserSettings() {
     }
   }
 
+  const handleUpdatePurchasedRecording = async () => {
+    if (!selectedUser || !purchasedRecordingHours) {
+      showAlert('error', '시간을 입력해주세요')
+      return
+    }
+
+    const hours = parseFloat(purchasedRecordingHours)
+    if (isNaN(hours) || hours <= 0) {
+      showAlert('error', '올바른 시간을 입력해주세요')
+      return
+    }
+
+    setIsUpdatingPurchasedRecording(true)
+    try {
+      const success = await updatePurchasedRecordingTime(selectedUser.id, purchasedRecordingOperation, hours)
+      if (success) {
+        showAlert('success', '추가구매 녹음 시간이 업데이트되었습니다')
+        setShowPurchasedRecordingModal(false)
+        setPurchasedRecordingHours('')
+        // Refresh user data
+        const updatedUser = await searchUserByEmail(selectedUser.email)
+        if (updatedUser) setSelectedUser(updatedUser)
+      } else {
+        showAlert('error', '추가구매 녹음 시간 업데이트에 실패했습니다')
+      }
+    } catch (err) {
+      showAlert('error', '업데이트 중 오류가 발생했습니다')
+    } finally {
+      setIsUpdatingPurchasedRecording(false)
+    }
+  }
+
+  const handleUpdatePurchasedAI = async () => {
+    if (!selectedUser || !purchasedAICredits) {
+      showAlert('error', '크레딧을 입력해주세요')
+      return
+    }
+
+    const credits = parseInt(purchasedAICredits)
+    if (isNaN(credits) || credits <= 0) {
+      showAlert('error', '올바른 크레딧을 입력해주세요')
+      return
+    }
+
+    setIsUpdatingPurchasedAI(true)
+    try {
+      const success = await updatePurchasedAICredit(selectedUser.id, purchasedAIOperation, credits)
+      if (success) {
+        showAlert('success', '추가구매 AI 크레딧이 업데이트되었습니다')
+        setShowPurchasedAIModal(false)
+        setPurchasedAICredits('')
+        // Refresh user data
+        const updatedUser = await searchUserByEmail(selectedUser.email)
+        if (updatedUser) setSelectedUser(updatedUser)
+      } else {
+        showAlert('error', '추가구매 AI 크레딧 업데이트에 실패했습니다')
+      }
+    } catch (err) {
+      showAlert('error', '업데이트 중 오류가 발생했습니다')
+    } finally {
+      setIsUpdatingPurchasedAI(false)
+    }
+  }
+
   const handleDeleteUser = async () => {
     if (!selectedUser) return
 
@@ -253,7 +329,7 @@ export default function UserSettings() {
               <div className="space-y-2 pl-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    내 녹음 한도:
+                    월별 녹음 한도:
                   </span>
                   <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {Math.floor(selectedUser.usage.total_recordable_time / 3600)}시간
@@ -281,6 +357,14 @@ export default function UserSettings() {
                     )}
                   </span>
                 </div>
+                <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    추가구매 시간:
+                  </span>
+                  <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    {formatTime(selectedUser.usage.purchased_recording_time || 0)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -292,7 +376,7 @@ export default function UserSettings() {
               <div className="space-y-2 pl-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    내 AI 질문 credit:
+                    월별 AI 질문 credit:
                   </span>
                   <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {selectedUser.usage.total_ai_credit}
@@ -314,22 +398,41 @@ export default function UserSettings() {
                     {Math.max(0, selectedUser.usage.total_ai_credit - selectedUser.usage.total_ai_used)}
                   </span>
                 </div>
+                <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    추가구매 credit:
+                  </span>
+                  <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    {selectedUser.usage.purchased_ai_credit || 0}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
             <button
               onClick={() => {
                 setShowRecordingModal(true)
                 setRecordingOperation('add')
                 setRecordingHours('')
               }}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-3 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
             >
-              <Clock className="w-5 h-5" />
-              <span>녹음 한도 추가/차감</span>
+              <Clock className="w-4 h-4" />
+              <span className="text-sm">월별 녹음 추가/차감</span>
+            </button>
+            <button
+              onClick={() => {
+                setShowPurchasedRecordingModal(true)
+                setPurchasedRecordingOperation('add')
+                setPurchasedRecordingHours('')
+              }}
+              className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <Clock className="w-4 h-4" />
+              <span className="text-sm">추가구매 녹음 추가/차감</span>
             </button>
             <button
               onClick={() => {
@@ -337,28 +440,39 @@ export default function UserSettings() {
                 setAIOperation('add')
                 setAICredits('')
               }}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-3 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
             >
-              <Coins className="w-5 h-5" />
-              <span>AI 질문 크레딧 한도 추가/차감</span>
+              <Coins className="w-4 h-4" />
+              <span className="text-sm">월별 AI 추가/차감</span>
+            </button>
+            <button
+              onClick={() => {
+                setShowPurchasedAIModal(true)
+                setPurchasedAIOperation('add')
+                setPurchasedAICredits('')
+              }}
+              className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <Coins className="w-4 h-4" />
+              <span className="text-sm">추가구매 AI 추가/차감</span>
             </button>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
             >
-              <UserX className="w-5 h-5" />
-              <span>계정 수정/삭제</span>
+              <UserX className="w-4 h-4" />
+              <span className="text-sm">계정 삭제</span>
             </button>
           </div>
         </>
       )}
 
-      {/* Recording Modal */}
+      {/* Monthly Recording Modal */}
       {showRecordingModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
-              녹음 한도 추가/차감
+              월별 녹음 한도 추가/차감
             </h3>
 
             {/* Toggle Buttons */}
@@ -430,12 +544,12 @@ export default function UserSettings() {
         </div>
       )}
 
-      {/* AI Credit Modal */}
+      {/* Monthly AI Credit Modal */}
       {showAIModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
-              AI 질문 크레딧 한도 추가/차감
+              월별 AI 질문 크레딧 추가/차감
             </h3>
 
             {/* Toggle Buttons */}
@@ -494,6 +608,160 @@ export default function UserSettings() {
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isUpdatingAI ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>적용 중...</span>
+                  </>
+                ) : (
+                  <span>적용</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Purchased Recording Modal */}
+      {showPurchasedRecordingModal && selectedUser && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
+              추가구매 녹음 시간 추가/차감
+            </h3>
+
+            {/* Toggle Buttons */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setPurchasedRecordingOperation('add')}
+                className={`flex-1 px-4 py-2 rounded-lg transition-all ${
+                  purchasedRecordingOperation === 'add'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                추가
+              </button>
+              <button
+                onClick={() => setPurchasedRecordingOperation('subtract')}
+                className={`flex-1 px-4 py-2 rounded-lg transition-all ${
+                  purchasedRecordingOperation === 'subtract'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                차감
+              </button>
+            </div>
+
+            {/* Input Field */}
+            <div className="mb-6">
+              <input
+                type="number"
+                value={purchasedRecordingHours}
+                onChange={(e) => setPurchasedRecordingHours(e.target.value)}
+                placeholder="시간 입력"
+                min="0"
+                step="1"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">1시간 단위로 입력</p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowPurchasedRecordingModal(false)
+                  setPurchasedRecordingHours('')
+                }}
+                disabled={isUpdatingPurchasedRecording}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleUpdatePurchasedRecording}
+                disabled={isUpdatingPurchasedRecording}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isUpdatingPurchasedRecording ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>적용 중...</span>
+                  </>
+                ) : (
+                  <span>적용</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Purchased AI Credit Modal */}
+      {showPurchasedAIModal && selectedUser && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
+              추가구매 AI 크레딧 추가/차감
+            </h3>
+
+            {/* Toggle Buttons */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setPurchasedAIOperation('add')}
+                className={`flex-1 px-4 py-2 rounded-lg transition-all ${
+                  purchasedAIOperation === 'add'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                추가
+              </button>
+              <button
+                onClick={() => setPurchasedAIOperation('subtract')}
+                className={`flex-1 px-4 py-2 rounded-lg transition-all ${
+                  purchasedAIOperation === 'subtract'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                차감
+              </button>
+            </div>
+
+            {/* Input Field */}
+            <div className="mb-6">
+              <input
+                type="number"
+                value={purchasedAICredits}
+                onChange={(e) => setPurchasedAICredits(e.target.value)}
+                placeholder="크레딧 입력"
+                min="0"
+                step="1"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">1크레딧 단위로 입력</p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowPurchasedAIModal(false)
+                  setPurchasedAICredits('')
+                }}
+                disabled={isUpdatingPurchasedAI}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleUpdatePurchasedAI}
+                disabled={isUpdatingPurchasedAI}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isUpdatingPurchasedAI ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>적용 중...</span>

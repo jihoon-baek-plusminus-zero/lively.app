@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useChatMessages } from '@/hooks/useChatMessages'
 import ReactMarkdown from 'react-markdown'
 import { useUserUsage } from '@/hooks/useUserUsage'
+import { logger } from '@/lib/logger'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface ChatPanelProps {
@@ -19,7 +20,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
   const [inputText, setInputText] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { getRemainingAICredit, refetchUsage } = useUserUsage()
+  const { getTotalRemainingAICredit, refetchUsage } = useUserUsage()
 
   // 새 메시지가 추가되면 스크롤을 아래로
   useEffect(() => {
@@ -78,13 +79,13 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
 
       // 4. 크레딧 정보 업데이트
       if (data.creditsRemaining !== undefined) {
-        console.log(`남은 AI 크레딧: ${data.creditsRemaining}`)
+        logger.log(`남은 AI 크레딧: ${data.creditsRemaining}`)
         // 사용량 정보 다시 가져오기
         await refetchUsage()
       }
 
     } catch (error: any) {
-      console.error('채팅 전송 실패:', error)
+      logger.error('채팅 전송 실패:', error)
       alert(error.message || '메시지 전송에 실패했습니다. 다시 시도해주세요.')
     } finally {
       setIsGenerating(false)
@@ -240,7 +241,7 @@ export default function ChatPanel({ lectureId }: ChatPanelProps) {
         </div>
 
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-          이번 달 남은 AI 질문 갯수: {getRemainingAICredit()}개
+          {t('chat.remaining.questions')} {getTotalRemainingAICredit()}{t('chat.remaining.count')}
         </p>
       </div>
     </div>

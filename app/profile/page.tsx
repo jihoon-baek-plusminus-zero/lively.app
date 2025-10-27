@@ -184,7 +184,7 @@ export default function ProfilePage() {
                 </h3>
                 <div className="space-y-2 pl-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">월별 녹음 한도</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.monthly.recording.limit')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {getTotalQuotaTime().hours}시간
                     </span>
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">추가 구매 시간 (월 한도 소진 이후 차감됩니다)</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.purchased.recording.time')}</span>
                     <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                       {formatTimeHHMMSS(
                         getPurchasedRecordingTime().hours,
@@ -229,7 +229,7 @@ export default function ProfilePage() {
                 </h3>
                 <div className="space-y-2 pl-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">월별 AI 질문 credit</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.monthly.ai.credit')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {usage.total_ai_credit}
                     </span>
@@ -247,7 +247,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">추가 구매 credit (월 한도 소진 이후 차감됩니다)</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('profile.usage.purchased.ai.credit')}</span>
                     <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                       {getPurchasedAICredit()}
                     </span>
