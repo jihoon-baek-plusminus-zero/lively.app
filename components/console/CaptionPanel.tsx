@@ -272,7 +272,7 @@ export default function CaptionPanel({
   }, [captions, savedCaptions, autoScroll])
 
   return (
-    <div className="flex-1 flex flex-col bg-white dark:bg-[#212121] border-r border-gray-200 dark:border-gray-700">
+    <div className="h-full flex flex-col bg-white dark:bg-[#212121] border-r border-gray-200 dark:border-gray-700">
       {/* Panel Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#212121]">
         <div className="flex items-center justify-between">
