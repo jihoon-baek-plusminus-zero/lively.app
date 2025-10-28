@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Failed to save notification',
+          details: error.message,
+          code: error.code,
         },
         { status: 500 }
       )
@@ -72,6 +74,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Internal server error',
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     )
@@ -114,6 +117,7 @@ export async function GET() {
       {
         success: false,
         error: 'Internal server error',
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     )
