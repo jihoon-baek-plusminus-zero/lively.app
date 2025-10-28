@@ -87,9 +87,8 @@ export default function TestApiDashboard() {
       logger.log('[TEST-DASHBOARD] ✅ Fetched notifications:', data.length)
 
       setAllNotifications(data)
-      if (data.length > 0) {
-        setLatestNotification(data[0])
-      }
+      // Don't show latest notification on initial load - keep waiting state
+      // setLatestNotification will only be set by real-time updates
     } catch (error) {
       logger.error('[TEST-DASHBOARD] ❌ Unexpected error:', error)
     } finally {
