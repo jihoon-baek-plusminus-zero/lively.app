@@ -24,6 +24,19 @@
 
 ---
 
+## ⚠️ 중요: URL 사용 안내
+
+**반드시 프로덕션 URL을 사용하세요:**
+- ✅ **사용:** `https://livey.app/api/test-notification`
+- ❌ **사용 금지:** `https://test-server-dev.livey.app/api/test-notification`
+
+**이유:**
+- 테스트 서버 (test-server-dev.livey.app)는 Vercel Deployment Protection이 활성화되어 있어 인증이 필요합니다
+- 401 Unauthorized 에러가 발생하면 프로덕션 URL을 사용하고 있는지 확인하세요
+- 프로덕션 URL은 인증 없이 공개 API로 사용 가능합니다
+
+---
+
 ## API 엔드포인트 정보
 
 ### 기본 정보
@@ -285,7 +298,24 @@ fetch('https://livey.app/api/test-notification', {
 
 ## 문제 해결
 
-### 문제 1: "Missing required fields" 에러
+### 문제 1: 401 Unauthorized 에러
+
+**원인:** 테스트 서버 URL을 사용하여 Vercel Deployment Protection에 막힘
+
+**에러 메시지 예시:**
+```
+Status code 401
+Authentication Required
+```
+
+**해결 방법:**
+1. **프로덕션 URL 사용:** `https://livey.app/api/test-notification`
+2. 테스트 서버 URL (`test-server-dev.livey.app`) 대신 프로덕션 URL 사용
+3. Bubble.io API Connector 설정에서 URL 확인 및 변경
+
+---
+
+### 문제 2: "Missing required fields" 에러
 
 **원인:** `name` 또는 `nationality` 필드가 누락되었습니다.
 
@@ -301,7 +331,7 @@ Only when: Input Name is not empty
 
 ---
 
-### 문제 2: CORS 에러
+### 문제 3: CORS 에러
 
 **원인:** 브라우저에서 직접 요청 시 CORS 정책 문제
 
@@ -311,7 +341,7 @@ Only when: Input Name is not empty
 
 ---
 
-### 문제 3: 대시보드에 실시간 업데이트가 안 됨
+### 문제 4: 대시보드에 실시간 업데이트가 안 됨
 
 **원인:** Supabase Realtime 연결 문제
 
@@ -323,7 +353,7 @@ Only when: Input Name is not empty
 
 ---
 
-### 문제 4: API 요청이 실패함 (500 에러)
+### 문제 5: API 요청이 실패함 (500 에러)
 
 **원인:** 서버 내부 에러 또는 데이터베이스 문제
 
