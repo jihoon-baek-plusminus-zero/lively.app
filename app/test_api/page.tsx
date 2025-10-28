@@ -48,6 +48,11 @@ export default function TestApiDashboard() {
 
             // Add to all notifications list
             setAllNotifications((prev) => [newNotification, ...prev])
+
+            // Reset to default state after 5 seconds
+            setTimeout(() => {
+              setLatestNotification(null)
+            }, 5000)
           }
         )
         .subscribe()
